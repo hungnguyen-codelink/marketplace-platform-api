@@ -2,6 +2,9 @@
   "name": "marketplace",
   "private": true,
   "workspaces": ["backend", "frontend", "e2e"],
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
   "scripts": {
     "dev": "concurrently \"npm run dev -w backend\" \"npm run dev -w frontend\"",
     "test": "npm run test -w backend && npm run test -w frontend"
