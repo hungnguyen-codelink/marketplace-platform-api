@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { errorHandler } from './middleware/errorHandler';
+import { authRouter } from './modules/auth/router';
 
 // Wrapper to catch async errors
 const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => Promise<void> | void) => {
@@ -18,6 +19,8 @@ export function createApp() {
   app.get('/health', asyncHandler((_req, res) => {
     res.json({ status: 'ok' });
   }));
+
+  app.use('/api/auth', authRouter);
 
   app.use(errorHandler);
 
