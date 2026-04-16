@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import type { User } from '../types';
+import { authApi } from '../api/auth';
 
 interface AuthContextValue {
   user: User | null;
   token: string | null;
   login: (user: User, token: string) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -31,11 +32,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(newToken);
   }, []);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-    setToken(null);
+  const logout = useCallback(async () => {
+    try {
+      await authApi.logout();
+    } catch (error) {
+      console.error('Logout API error:', error);
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
+      setToken(null);
+    }
   }, []);
 
   return (
