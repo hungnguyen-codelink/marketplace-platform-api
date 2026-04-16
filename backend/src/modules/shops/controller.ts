@@ -15,7 +15,9 @@ export class ShopsController {
   }
 
   async updateMyShop(req: Request, res: Response) {
-    const shop = await shopsService.updateShop(req.user!.id, req.body.shopId, req.body);
+    // Fetch the seller's shop first to get the shop ID
+    const sellerShop = await shopsService.getShopBySellerId(req.user!.id);
+    const shop = await shopsService.updateShop(req.user!.id, sellerShop.id, req.body);
     res.status(200).json(shop);
   }
 

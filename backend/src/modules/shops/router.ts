@@ -90,14 +90,7 @@ shopsRouter.put(
   authenticate,
   requireRole('seller'),
   validate(updateShopSchema),
-  asyncHandler(async (req, res) => {
-    // Need to fetch the shop ID first
-    const { shopsService } = await import('./service');
-    const shop = await shopsService.getShopBySellerId(req.user!.id);
-    // Attach shop ID to request body for controller
-    req.body.shopId = shop.id;
-    return shopsController.updateMyShop(req, res);
-  })
+  asyncHandler((req, res) => shopsController.updateMyShop(req, res))
 );
 
 // GET /api/shops/:id — get shop by ID (public)
