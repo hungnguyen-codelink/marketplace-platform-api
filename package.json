@@ -1,0 +1,9 @@
+{
+  "name": "marketplace",
+  "private": true,
+  "workspaces": ["backend", "frontend", "e2e"],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w backend\" \"npm run dev -w frontend\"",
+    "test": "npm run test -w backend && npm run test -w frontend"
+  }
+}
