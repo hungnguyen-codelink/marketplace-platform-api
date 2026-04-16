@@ -145,7 +145,6 @@ export default function Register() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
-              error={undefined}
             />
           </FormField>
 
@@ -162,7 +161,6 @@ export default function Register() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               disabled={loading}
-              error={undefined}
             />
           </FormField>
 
@@ -179,7 +177,6 @@ export default function Register() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
-              error={undefined}
             />
           </FormField>
 
