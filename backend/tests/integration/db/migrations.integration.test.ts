@@ -181,8 +181,13 @@ describe('Database Migrations Integration Tests', () => {
     });
 
     it('maintains referential integrity - foreign keys are enforced', async () => {
-      // Cleanup from previous tests
+      // Cleanup from previous tests - delete dependent records first
+      await pool.query('DELETE FROM reviews');
+      await pool.query('DELETE FROM order_items');
+      await pool.query('DELETE FROM orders');
+      await pool.query('DELETE FROM products');
       await pool.query('DELETE FROM shops');
+      await pool.query('DELETE FROM sessions');
       await pool.query('DELETE FROM users');
 
       // Try to insert shop with non-existent user
