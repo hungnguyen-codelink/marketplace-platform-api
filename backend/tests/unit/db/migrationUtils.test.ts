@@ -55,6 +55,15 @@ describe('migrationUtils', () => {
       expect(result[0].filename).toBe('001.sql');
       expect(result[1].filename).toBe('003.sql');
     });
+
+    it('propagates file read errors', () => {
+      (fs.existsSync as jest.Mock).mockReturnValue(true);
+      (fs.readdirSync as jest.Mock).mockReturnValue(['001_create_users.sql']);
+      (fs.readFileSync as jest.Mock).mockImplementation(() => {
+        throw new Error('EACCES: permission denied');
+      });
+      expect(() => readMigrationFiles('/fake/dir')).toThrow('EACCES: permission denied');
+    });
   });
 
   describe('hashContent', () => {
@@ -95,7 +104,7 @@ describe('migrationUtils', () => {
     it('creates _migrations table if not exists', async () => {
       const mockPool = {
         query: jest.fn().mockResolvedValue({ rows: [] }),
-      };
+      } as unknown as any;
 
       await createMigrationsTable(mockPool);
 
@@ -118,7 +127,7 @@ describe('migrationUtils', () => {
     it('returns false if migration not in table', async () => {
       const mockPool = {
         query: jest.fn().mockResolvedValue({ rows: [] }),
-      };
+      } as unknown as any;
 
       const result = await isMigrationApplied(mockPool, 'test.sql', 'hash123');
 
@@ -132,7 +141,7 @@ describe('migrationUtils', () => {
     it('returns true if migration exists with matching hash', async () => {
       const mockPool = {
         query: jest.fn().mockResolvedValue({ rows: [{ hash: 'hash123' }] }),
-      };
+      } as unknown as any;
 
       const result = await isMigrationApplied(mockPool, 'test.sql', 'hash123');
 
@@ -142,7 +151,7 @@ describe('migrationUtils', () => {
     it('returns false if migration exists but hash does not match', async () => {
       const mockPool = {
         query: jest.fn().mockResolvedValue({ rows: [{ hash: 'oldhash' }] }),
-      };
+      } as unknown as any;
 
       const result = await isMigrationApplied(mockPool, 'test.sql', 'hash123');
 
@@ -154,7 +163,7 @@ describe('migrationUtils', () => {
     it('inserts migration record into _migrations table', async () => {
       const mockPool = {
         query: jest.fn().mockResolvedValue({ rows: [] }),
-      };
+      } as unknown as any;
 
       await recordMigration(mockPool, 'test.sql', 'hash123');
 

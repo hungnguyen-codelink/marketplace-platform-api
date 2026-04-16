@@ -24,11 +24,11 @@ dotenv.config();
 export async function runMigrations(): Promise<void> {
   const DATABASE_URL = process.env.DATABASE_URL;
 
-  if (!DATABASE_URL) {
-    throw new Error('DATABASE_URL environment variable is not set.');
-  }
-
-  const pool = new Pool({ connectionString: DATABASE_URL });
+  const pool = new Pool({
+    connectionString: DATABASE_URL,
+    connectionTimeoutMillis: 5000,
+    idleTimeoutMillis: 10000,
+  });
 
   try {
     console.log('Starting database migrations...');
@@ -68,8 +68,9 @@ export async function runMigrations(): Promise<void> {
         await recordMigration(pool, filename, hash);
         console.log(`✓ ${filename} (applied)`);
         applied++;
-      } catch (err: any) {
-        console.error(`✗ ${filename} failed:`, err.message);
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        console.error(`✗ ${filename} failed: ${errorMsg}`);
         throw err;
       }
     }

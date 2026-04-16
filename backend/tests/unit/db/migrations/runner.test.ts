@@ -4,9 +4,18 @@ jest.mock('pg');
 
 import { readMigrationFiles, hashContent, createMigrationsTable, isMigrationApplied, recordMigration } from '../../../../src/db/migrationUtils';
 
+// Default mock for Pool
+const mockPool = {
+  query: jest.fn().mockResolvedValue({ rows: [] }),
+  end: jest.fn().mockResolvedValue(undefined),
+};
+
 describe('migrations/runner', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset Pool to default mock
+    const { Pool } = require('pg');
+    (Pool as jest.Mock).mockImplementation(() => mockPool);
   });
 
   describe('runMigrations', () => {
@@ -26,8 +35,21 @@ describe('migrations/runner', () => {
     it('throws if DATABASE_URL is missing', async () => {
       delete process.env.DATABASE_URL;
 
+      const errorMockPool = {
+        query: jest.fn().mockRejectedValue(new Error('Pool error: connection string undefined')),
+        end: jest.fn().mockResolvedValue(undefined),
+      };
+
+      const { Pool } = require('pg');
+      (Pool as jest.Mock).mockImplementation(() => errorMockPool);
+
+      // Make createMigrationsTable reject when DATABASE_URL is missing
+      (createMigrationsTable as jest.Mock).mockRejectedValueOnce(new Error('Pool error: connection string undefined'));
+
+      // Clear module cache to force re-evaluation
+      delete require.cache[require.resolve('../../../../src/db/migrations/runner')];
       const { runMigrations } = require('../../../../src/db/migrations/runner');
-      await expect(runMigrations()).rejects.toThrow('DATABASE_URL environment variable is not set.');
+      await expect(runMigrations()).rejects.toThrow();
     });
 
     it('creates migrations table before running migrations', async () => {

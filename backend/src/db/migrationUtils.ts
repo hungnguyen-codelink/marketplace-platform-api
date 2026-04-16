@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { Pool } from 'pg';
 
 /**
  * Read all SQL migration files from a directory and return them sorted lexicographically.
@@ -33,7 +34,7 @@ export function hashContent(content: string): string {
 /**
  * Create the migrations tracking table if it doesn't exist.
  */
-export async function createMigrationsTable(pool: any): Promise<void> {
+export async function createMigrationsTable(pool: Pool): Promise<void> {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS _migrations (
       filename TEXT NOT NULL,
@@ -47,7 +48,7 @@ export async function createMigrationsTable(pool: any): Promise<void> {
 /**
  * Check if a migration has already been applied by looking at the _migrations table.
  */
-export async function isMigrationApplied(pool: any, filename: string, hash: string): Promise<boolean> {
+export async function isMigrationApplied(pool: Pool, filename: string, hash: string): Promise<boolean> {
   const result = await pool.query('SELECT hash FROM _migrations WHERE filename = $1', [filename]);
 
   if (result.rows.length === 0) {
@@ -61,6 +62,6 @@ export async function isMigrationApplied(pool: any, filename: string, hash: stri
 /**
  * Record a migration as applied in the _migrations table.
  */
-export async function recordMigration(pool: any, filename: string, hash: string): Promise<void> {
+export async function recordMigration(pool: Pool, filename: string, hash: string): Promise<void> {
   await pool.query('INSERT INTO _migrations (filename, hash) VALUES ($1, $2)', [filename, hash]);
 }
