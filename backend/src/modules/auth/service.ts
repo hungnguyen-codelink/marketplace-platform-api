@@ -51,7 +51,7 @@ export class AuthService {
 
       // Generate JWT token
       const token = jwt.sign(
-        { id: userId, email, role },
+        { id: userId, email: normalizedEmail, role },
         env.JWT_SECRET,
         { expiresIn: env.SESSION_TTL_SECONDS }
       );
