@@ -472,3 +472,13 @@ baseURL: 'http://localhost:5173'  // Vite dev server
 | FakeStore import mode | Upsert by `fakestore_id`; local fields not overwritten unless `overwrite: true` |
 | Max stock per product | 999,999 units; enforced at DB constraint and API validation |
 | Order state transitions | Strictly server-enforced; response includes `validNextStates` on invalid attempt |
+
+Task 1.1: Auth Backend                                                                                                                                                              
+  ◻ Task 1.2: Auth Frontend                                                                                                                                                             
+  ◻ Task 2.1: Shops Backend                                                                                                                                                             
+  ◻ Task 2.2: Shops Frontend                                                                                                                                                            
+  ◻ Task 3.1: Products Backend                                                                                                                                                          
+  ◻ Task 3.2: Products Frontend                                                                                                                                                         
+  ◻ Task 4.1: FakeStore Integration Backend                                                                                                                                             
+  ◻ Task 4.2: FakeStore Integration Frontend                                                                                                                                          
+  ◻ Task 5.1: Orders & Checkout Backend  

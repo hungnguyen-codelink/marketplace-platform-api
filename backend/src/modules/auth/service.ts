@@ -33,6 +33,9 @@ export class AuthService {
   async register(payload: RegisterPayload): Promise<AuthResponse> {
     const { email, password, full_name, role } = payload;
 
+    // Normalize email
+    const normalizedEmail = email.toLowerCase().trim();
+
     // Hash password
     const passwordHash = await bcryptjs.hash(password, 10);
 
@@ -41,7 +44,7 @@ export class AuthService {
     try {
       const result = await db.query(
         'INSERT INTO users (email, password_hash, full_name, role) VALUES ($1, $2, $3, $4) RETURNING id, email, full_name, role',
-        [email, passwordHash, full_name, role]
+        [normalizedEmail, passwordHash, full_name, role]
       );
       const user = result.rows[0];
       userId = user.id;
@@ -64,7 +67,7 @@ export class AuthService {
       return {
         user: {
           id: userId,
-          email,
+          email: normalizedEmail,
           full_name,
           role,
         },
@@ -82,10 +85,13 @@ export class AuthService {
   async login(payload: LoginPayload): Promise<AuthResponse> {
     const { email, password } = payload;
 
+    // Normalize email
+    const normalizedEmail = email.toLowerCase().trim();
+
     // Find user by email
     const userResult = await db.query(
       'SELECT id, email, password_hash, full_name, role FROM users WHERE email = $1',
-      [email]
+      [normalizedEmail]
     );
 
     if (userResult.rows.length === 0) {

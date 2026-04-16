@@ -1,16 +1,9 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
 import { z } from 'zod';
-import { createHash } from 'crypto';
 import { authController } from './controller';
 import { validate } from '../../middleware/validate';
 import { authenticate } from '../../middleware/authenticate';
-
-// Async handler wrapper
-const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => Promise<void> | void) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-  };
-};
+import { asyncHandler } from '../../utils/asyncHandler';
 
 // Validation schemas
 const registerSchema = z.object({

@@ -1,14 +1,8 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express from 'express';
 import cors from 'cors';
 import { errorHandler } from './middleware/errorHandler';
 import { authRouter } from './modules/auth/router';
-
-// Wrapper to catch async errors
-const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => Promise<void> | void) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-  };
-};
+import { asyncHandler } from './utils/asyncHandler';
 
 export function createApp() {
   const app = express();

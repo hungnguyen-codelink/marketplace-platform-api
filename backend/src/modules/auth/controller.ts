@@ -14,8 +14,8 @@ export class AuthController {
   }
 
   async logout(req: Request, res: Response) {
-    const authHeader = req.headers.authorization;
-    const token = authHeader?.split(' ')[1] || '';
+    // Use rawToken attached by authenticate middleware instead of re-parsing header
+    const token = req.rawToken || '';
     const tokenHash = createHash('sha256').update(token).digest('hex');
     await authService.logout(tokenHash);
     res.status(204).send();

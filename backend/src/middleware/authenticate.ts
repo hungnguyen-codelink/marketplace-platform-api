@@ -5,6 +5,12 @@ import { env } from '../config/env';
 import { db } from '../db/client';
 import { AuthError } from '../errors';
 
+interface JwtPayload {
+  id: string;
+  email: string;
+  role: string;
+}
+
 export async function authenticate(req: Request, res: Response, next: NextFunction) {
   try {
     const authHeader = req.headers.authorization;
@@ -19,14 +25,10 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
     }
 
     const token = parts[1];
-    let decoded: any;
+    let decoded: JwtPayload;
 
     try {
-      decoded = jwt.verify(token, env.JWT_SECRET) as {
-        id: string;
-        email: string;
-        role: string;
-      };
+      decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
     } catch (error) {
       throw new AuthError('Unauthorized');
     }
@@ -52,6 +54,9 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
       email: decoded.email,
       role: decoded.role,
     };
+
+    // Attach raw token to request for use in logout
+    req.rawToken = token;
 
     next();
   } catch (error) {
