@@ -1,0 +1,87 @@
+TESTING AGENT REVIEW — Task 1.2: Auth Frontend (Phase 1)
+================================================================
+
+REVIEW STATUS: ✅ APPROVED (with amendments)
+
+CONTRACT VALIDATION:
+
+1. tiers_required [unit] — ✅ CORRECT
+   Frontend with mocked APIs uses [unit] tier appropriately.
+   No integration tests needed (all API calls mocked via Axios).
+
+2. Test commands — ⚠️ AMENDED
+   ISSUE: Listed "npm install" as a test command; this is setup, not a test
+   FIX: Separated into explicit "Setup & Installation" section
+   COMMANDS (corrected):
+   - npm test -w frontend (run all tests once)
+   - npm run test:coverage -w frontend (with coverage)
+   - npm run test:watch -w frontend (watch mode)
+   - npm run test:ui -w frontend (UI dashboard)
+
+3. must_cover completeness — ⚠️ AMENDED (2 additions)
+   MISSING #1: Build verification
+   - Added: npm run build -w frontend must succeed (no errors/TypeScript issues)
+
+   MISSING #2: RequireAuth guard regression
+   - Added: frontend/src/components/guards/RequireAuth.test.tsx
+   - Tests: unauthenticated redirect, authenticated pass-through, URL encoding
+   - Rationale: AuthContext.logout() change could affect guard behavior
+
+4. Coverage thresholds — ⚠️ AMENDED
+   ISSUE: Defined in acceptance criteria but not listed as test command
+   FIX: Added npm run test:coverage -w frontend to explicit test commands
+   THRESHOLDS (now explicit):
+   - Login: ≥80% lines, ≥75% branches
+   - Register: ≥80% lines, ≥75% branches
+   - AuthContext: ≥85% lines, 100% branches (critical)
+   - API module: ≥90% lines, 100% branches
+   - RequireAuth: ≥85% lines, 100% branches (new)
+
+5. Test setup file — ✅ CONFIRMED + ENHANCED
+   Setup file adds:
+   - cleanup() and localStorage.clear() after each test
+   - vi.clearAllMocks() (added for safety)
+   - @testing-library/jest-dom import (for custom matchers)
+   - window.location mock for redirect tests
+
+AMENDMENTS SUMMARY:
+
+[✅] Amendment 1: Test Commands Structure
+     Separated npm install into Setup section; listed only actual test commands
+
+[✅] Amendment 2: Build Verification
+     Added npm run build -w frontend requirement (no errors/TS issues)
+
+[✅] Amendment 3: RequireAuth Regression Testing
+     New test file: frontend/src/components/guards/RequireAuth.test.tsx
+     - Covers unauthenticated redirect
+     - Covers authenticated pass-through
+     - Covers URL encoding of returnTo param
+
+[✅] Amendment 4: Coverage Command Inclusion
+     npm run test:coverage -w frontend now explicit in test commands
+
+[✅] Amendment 5: Test Setup File Details
+     Added vi.clearAllMocks() and @testing-library/jest-dom to setup.ts
+
+[✅] Amendment 6: Files Created/Modified Clarity
+     RequireAuth.tsx unchanged; new test file RequireAuth.test.tsx created
+
+FEASIBILITY ASSESSMENT:
+
+✅ Exact test commands are runnable (tested with existing codebase structure)
+✅ Mock setup clear: vitest + @testing-library/react handles Axios, Router, localStorage
+✅ Coverage thresholds achievable: 80-90% is standard for UI component testing
+✅ Test names describe behavior (form validation, error handling, navigation)
+✅ Build verification included (npm run build -w frontend)
+✅ No conflicts with existing components (Button, Input, FormField already exist)
+✅ Type definitions complete (RegisterPayload, LoginPayload, AuthResponse)
+
+SIGN-OFF:
+
+Testing Agent: ✅ APPROVED
+All concerns addressed. Contract is rigorous, executable, and complete.
+Ready for coding agent to implement.
+
+Date: 2026-04-16
+Reviewer: Testing Agent (Claude Code)
