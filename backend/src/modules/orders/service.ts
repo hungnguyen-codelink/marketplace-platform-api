@@ -162,7 +162,11 @@ export class OrdersService {
       // Fetch and return complete order
       return this.getOrder(buyerId, orderId);
     } catch (error) {
-      await client.query('ROLLBACK');
+      try {
+        await client.query('ROLLBACK');
+      } catch (rollbackError) {
+        // rollback may fail if BEGIN never executed; swallow it
+      }
       throw error;
     } finally {
       client.release();
@@ -220,14 +224,34 @@ export class OrdersService {
       [buyerId, limit, offset]
     );
 
+    // Batch-fetch all items with a single query
+    const orderIds = ordersResult.rows.map(o => o.id);
+    if (orderIds.length === 0) {
+      return {
+        data: [],
+        total,
+        page,
+        limit,
+      };
+    }
+
+    const placeholders = orderIds.map((_, i) => `$${i + 1}`).join(',');
+    const itemsResult = await db.query(
+      `SELECT order_id, product_id, quantity, unit_price FROM order_items WHERE order_id IN (${placeholders})`,
+      orderIds
+    );
+
+    const itemsByOrderId = new Map<string, any[]>();
+    for (const item of itemsResult.rows) {
+      if (!itemsByOrderId.has(item.order_id)) {
+        itemsByOrderId.set(item.order_id, []);
+      }
+      itemsByOrderId.get(item.order_id)!.push(item);
+    }
+
     const orders: OrderResponse[] = [];
 
     for (const order of ordersResult.rows) {
-      const itemsResult = await db.query(
-        `SELECT product_id, quantity, unit_price FROM order_items WHERE order_id = $1`,
-        [order.id]
-      );
-
       orders.push({
         id: order.id,
         buyer_id: order.buyer_id,
@@ -235,7 +259,7 @@ export class OrdersService {
         shipping_address: order.shipping_address,
         total_amount: order.total_amount.toString(),
         transaction_id: order.transaction_id,
-        items: itemsResult.rows.map((item) => ({
+        items: (itemsByOrderId.get(order.id) || []).map((item) => ({
           product_id: item.product_id,
           quantity: item.quantity,
           unit_price: item.unit_price.toString(),
@@ -316,14 +340,34 @@ export class OrdersService {
 
     const ordersResult = await db.query(ordersQuery, ordersParams);
 
+    // Batch-fetch all items with a single query
+    const orderIds = ordersResult.rows.map(o => o.id);
+    if (orderIds.length === 0) {
+      return {
+        data: [],
+        total,
+        page,
+        limit,
+      };
+    }
+
+    const placeholders = orderIds.map((_, i) => `$${i + 1}`).join(',');
+    const itemsResult = await db.query(
+      `SELECT order_id, product_id, quantity, unit_price FROM order_items WHERE order_id IN (${placeholders})`,
+      orderIds
+    );
+
+    const itemsByOrderId = new Map<string, any[]>();
+    for (const item of itemsResult.rows) {
+      if (!itemsByOrderId.has(item.order_id)) {
+        itemsByOrderId.set(item.order_id, []);
+      }
+      itemsByOrderId.get(item.order_id)!.push(item);
+    }
+
     const orders: OrderResponse[] = [];
 
     for (const order of ordersResult.rows) {
-      const itemsResult = await db.query(
-        `SELECT product_id, quantity, unit_price FROM order_items WHERE order_id = $1`,
-        [order.id]
-      );
-
       orders.push({
         id: order.id,
         buyer_id: order.buyer_id,
@@ -331,7 +375,7 @@ export class OrdersService {
         shipping_address: order.shipping_address,
         total_amount: order.total_amount.toString(),
         transaction_id: order.transaction_id,
-        items: itemsResult.rows.map((item) => ({
+        items: (itemsByOrderId.get(order.id) || []).map((item) => ({
           product_id: item.product_id,
           quantity: item.quantity,
           unit_price: item.unit_price.toString(),
@@ -396,6 +440,7 @@ export class OrdersService {
       updated_at: order.updated_at,
     };
   }
+
 
   async updateSellerOrderStatus(sellerId: string, orderId: string, newStatus: string): Promise<OrderResponse> {
     // First: Check if order exists at all

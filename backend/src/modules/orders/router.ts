@@ -20,7 +20,9 @@ const checkoutSchema = z.object({
 });
 
 const updateOrderStatusSchema = z.object({
-  status: z.string().min(1, 'status is required'),
+  status: z.enum(['confirmed', 'shipped', 'delivered', 'completed'], {
+    errorMap: () => ({ message: 'status must be one of: confirmed, shipped, delivered, completed' }),
+  }),
 });
 
 export const ordersRouter = Router();

@@ -782,7 +782,7 @@ describe('Orders Endpoints - Integration Tests', () => {
       const res = await request(app)
         .patch(`/api/seller/orders/${orderId}/status`)
         .set('Authorization', `Bearer ${token}`)
-        .send({ status: 'pending' }); // Cannot go backward
+        .send({ status: 'delivered' }); // Cannot skip ahead (must go through 'shipped' first)
 
       expect(res.status).toBe(422);
       expect(res.body).toHaveProperty('currentState', 'confirmed');
