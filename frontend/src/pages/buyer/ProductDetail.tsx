@@ -91,7 +91,7 @@ export default function ProductDetail() {
 
           {/* Rating */}
           <div className="mb-6 flex items-center gap-2">
-            <StarRating rating={product.aggregate_rating} readonly />
+            <StarRating rating={product.aggregate_rating} interactive={false} />
             <span className="text-sm text-gray-600">
               ({product.review_count} reviews)
             </span>

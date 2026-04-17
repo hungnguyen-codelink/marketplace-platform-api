@@ -387,4 +387,205 @@ describe('ProductBrowse', () => {
       );
     });
   });
+
+  it('[ProductBrowse StarRating] When review_count === 0, does not display StarRating', async () => {
+    const { productsApi } = await import('../../api/products');
+    vi.mocked(productsApi.getProducts).mockResolvedValueOnce({
+      data: [
+        {
+          id: 'prod-1',
+          shop_id: 'shop-1',
+          title: 'Laptop',
+          price: 999.99,
+          stock: 5,
+          aggregate_rating: 0,
+          review_count: 0,
+          created_at: '2026-04-16T00:00:00Z',
+          updated_at: '2026-04-16T00:00:00Z',
+        },
+      ],
+      total: 1,
+      page: 1,
+      limit: 10,
+    });
+
+    renderWithProviders(<ProductBrowse />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Laptop')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole('img', { name: /star/i })).not.toBeInTheDocument();
+  });
+
+  it('[ProductBrowse StarRating] When review_count > 0, displays StarRating (interactive=false, size="sm")', async () => {
+    const { productsApi } = await import('../../api/products');
+    vi.mocked(productsApi.getProducts).mockResolvedValueOnce({
+      data: [
+        {
+          id: 'prod-1',
+          shop_id: 'shop-1',
+          title: 'Laptop',
+          price: 999.99,
+          stock: 5,
+          aggregate_rating: 4.5,
+          review_count: 10,
+          created_at: '2026-04-16T00:00:00Z',
+          updated_at: '2026-04-16T00:00:00Z',
+        },
+      ],
+      total: 1,
+      page: 1,
+      limit: 10,
+    });
+
+    renderWithProviders(<ProductBrowse />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Laptop')).toBeInTheDocument();
+    });
+
+    const stars = screen.getAllByRole('img', { name: /star/i });
+    expect(stars.length).toBeGreaterThan(0);
+  });
+
+  it('[ProductBrowse StarRating] StarRating displays product.aggregate_rating value', async () => {
+    const { productsApi } = await import('../../api/products');
+    vi.mocked(productsApi.getProducts).mockResolvedValueOnce({
+      data: [
+        {
+          id: 'prod-1',
+          shop_id: 'shop-1',
+          title: 'Laptop',
+          price: 999.99,
+          stock: 5,
+          aggregate_rating: 4.8,
+          review_count: 20,
+          created_at: '2026-04-16T00:00:00Z',
+          updated_at: '2026-04-16T00:00:00Z',
+        },
+      ],
+      total: 1,
+      page: 1,
+      limit: 10,
+    });
+
+    renderWithProviders(<ProductBrowse />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Laptop')).toBeInTheDocument();
+    });
+
+    const starImg = screen.getByRole('img', { name: /4.8 out of 5 stars/i });
+    expect(starImg).toBeInTheDocument();
+  });
+
+  it('[ProductBrowse StarRating] StarRating displayed alongside review count text', async () => {
+    const { productsApi } = await import('../../api/products');
+    vi.mocked(productsApi.getProducts).mockResolvedValueOnce({
+      data: [
+        {
+          id: 'prod-1',
+          shop_id: 'shop-1',
+          title: 'Laptop',
+          price: 999.99,
+          stock: 5,
+          aggregate_rating: 4.5,
+          review_count: 20,
+          created_at: '2026-04-16T00:00:00Z',
+          updated_at: '2026-04-16T00:00:00Z',
+        },
+      ],
+      total: 1,
+      page: 1,
+      limit: 10,
+    });
+
+    renderWithProviders(<ProductBrowse />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Laptop')).toBeInTheDocument();
+    });
+
+    const reviewText = screen.getByText(/20 reviews/i);
+    expect(reviewText).toBeInTheDocument();
+
+    const stars = screen.getAllByRole('img', { name: /star/i });
+    expect(stars.length).toBeGreaterThan(0);
+  });
+
+  it('[ProductBrowse StarRating] Review count text matches product.review_count value', async () => {
+    const { productsApi } = await import('../../api/products');
+    vi.mocked(productsApi.getProducts).mockResolvedValueOnce({
+      data: [
+        {
+          id: 'prod-1',
+          shop_id: 'shop-1',
+          title: 'Laptop',
+          price: 999.99,
+          stock: 5,
+          aggregate_rating: 4.5,
+          review_count: 15,
+          created_at: '2026-04-16T00:00:00Z',
+          updated_at: '2026-04-16T00:00:00Z',
+        },
+      ],
+      total: 1,
+      page: 1,
+      limit: 10,
+    });
+
+    renderWithProviders(<ProductBrowse />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Laptop')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/15 reviews/i)).toBeInTheDocument();
+  });
+
+  it('[ProductBrowse StarRating] Multiple products with different ratings display correctly', async () => {
+    const { productsApi } = await import('../../api/products');
+    vi.mocked(productsApi.getProducts).mockResolvedValueOnce({
+      data: [
+        {
+          id: 'prod-1',
+          shop_id: 'shop-1',
+          title: 'Laptop',
+          price: 999.99,
+          stock: 5,
+          aggregate_rating: 4.8,
+          review_count: 20,
+          created_at: '2026-04-16T00:00:00Z',
+          updated_at: '2026-04-16T00:00:00Z',
+        },
+        {
+          id: 'prod-2',
+          shop_id: 'shop-1',
+          title: 'Mouse',
+          price: 29.99,
+          stock: 15,
+          aggregate_rating: 3.5,
+          review_count: 8,
+          created_at: '2026-04-16T00:00:00Z',
+          updated_at: '2026-04-16T00:00:00Z',
+        },
+      ],
+      total: 2,
+      page: 1,
+      limit: 10,
+    });
+
+    renderWithProviders(<ProductBrowse />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Laptop')).toBeInTheDocument();
+      expect(screen.getByText('Mouse')).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole('img', { name: /4.8 out of 5 stars/i })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /3.5 out of 5 stars/i })).toBeInTheDocument();
+    expect(screen.getByText(/20 reviews/i)).toBeInTheDocument();
+    expect(screen.getByText(/8 reviews/i)).toBeInTheDocument();
+  });
 });

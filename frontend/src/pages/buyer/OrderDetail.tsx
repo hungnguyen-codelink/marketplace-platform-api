@@ -1,15 +1,26 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { getOrder } from '../../api/orders';
 import ProgressStepper from '../../components/ProgressStepper';
 import Spinner from '../../components/Spinner';
+import ReviewForm from '../../components/ReviewForm';
+import { useSubmitReview } from '../../hooks/useReviews';
+import { useToast } from '../../contexts/ToastContext';
 import type { Order, OrderStatus } from '../../types';
+
+interface ReviewState {
+  submitted: boolean;
+  alreadyReviewed: boolean;
+}
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reviewStates, setReviewStates] = useState<Record<string, ReviewState>>({});
+  const { addToast } = useToast();
+  const submitReview = useSubmitReview();
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -76,14 +87,56 @@ export default function OrderDetail() {
           </thead>
           <tbody className="divide-y divide-gray-200">
             {order.items?.map((item) => (
-              <tr key={item.id}>
-                <td className="px-6 py-4 text-sm text-gray-900">{item.product?.title || 'Unknown'}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">{item.quantity}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">${item.unit_price.toFixed(2)}</td>
-                <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                  ${(item.unit_price * item.quantity).toFixed(2)}
-                </td>
-              </tr>
+              <React.Fragment key={item.id}>
+                <tr>
+                  <td className="px-6 py-4 text-sm text-gray-900">{item.product?.title || 'Unknown'}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{item.quantity}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">${item.unit_price.toFixed(2)}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                    ${(item.unit_price * item.quantity).toFixed(2)}
+                  </td>
+                </tr>
+                {order.status === 'completed' && (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-4">
+                      {reviewStates[item.id]?.submitted ? (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                          <p className="text-green-700 font-medium">Review submitted</p>
+                        </div>
+                      ) : reviewStates[item.id]?.alreadyReviewed ? (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                          <p className="text-blue-700 font-medium">Already reviewed</p>
+                        </div>
+                      ) : (
+                        <ReviewForm
+                          orderItemId={item.id}
+                          onSubmit={(data) => {
+                            submitReview.mutate(data, {
+                              onSuccess: () => {
+                                setReviewStates((prev) => ({
+                                  ...prev,
+                                  [item.id]: { submitted: true, alreadyReviewed: false },
+                                }));
+                              },
+                              onError: (error: any) => {
+                                if (error?.response?.status === 409) {
+                                  setReviewStates((prev) => ({
+                                    ...prev,
+                                    [item.id]: { submitted: false, alreadyReviewed: true },
+                                  }));
+                                } else {
+                                  addToast('Failed to submit review', 'error');
+                                }
+                              },
+                            });
+                          }}
+                          isLoading={submitReview.isPending}
+                        />
+                      )}
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
             ))}
           </tbody>
         </table>

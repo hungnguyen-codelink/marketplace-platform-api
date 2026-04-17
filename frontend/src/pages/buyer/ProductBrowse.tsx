@@ -6,6 +6,7 @@ import Spinner from '../../components/Spinner';
 import Badge from '../../components/Badge';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import StarRating from '../../components/StarRating';
 
 const CATEGORIES = ['All Categories', 'electronics', 'clothing', 'books', 'home', 'sports', 'toys'];
 
@@ -149,9 +150,12 @@ export default function ProductBrowse() {
                   </div>
 
                   {product.review_count > 0 && (
-                    <p className="text-xs text-gray-500">
-                      ({product.review_count} reviews)
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <StarRating rating={product.aggregate_rating} interactive={false} size="sm" />
+                      <p className="text-xs text-gray-500">
+                        ({product.review_count} reviews)
+                      </p>
+                    </div>
                   )}
                 </div>
               </div>
