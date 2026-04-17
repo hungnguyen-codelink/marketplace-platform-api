@@ -70,6 +70,17 @@ export default function SellerOrders() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="mx-auto max-w-6xl px-4 py-8">
+        <h1 className="text-2xl font-bold text-gray-900 mb-8">Seller Orders</h1>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <h1 className="text-2xl font-bold text-gray-900 mb-8">Seller Orders</h1>

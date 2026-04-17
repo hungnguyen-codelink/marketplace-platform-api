@@ -24,7 +24,7 @@ function renderWithProviders(ui: React.ReactElement) {
 const mockOrderData = {
   id: 'ord-1',
   buyer_id: 'buyer-1',
-  status: 'pending',
+  status: 'pending' as const,
   shipping_address: { street: '123 Main', city: 'Boston', state: 'MA', zip: '02101', country: 'USA' },
   total_amount: 100,
   created_at: '2026-04-17T00:00:00Z',
