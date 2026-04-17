@@ -35,7 +35,6 @@ export default function FakeStoreImport() {
       const data = await fakestoreApi.getProducts();
       setProducts(data);
     } catch (err) {
-      console.error('Failed to fetch FakeStore products:', err);
       setError('Failed to load FakeStore products. Please try again.');
     } finally {
       setLoading(false);
@@ -53,7 +52,6 @@ export default function FakeStoreImport() {
   };
 
   const handleImportClick = () => {
-    if (selected.size === 0) return;
     setImportModal({ ...importModal, open: true });
   };
 
@@ -68,7 +66,6 @@ export default function FakeStoreImport() {
       setImportModal({ open: false, overwrite: false });
       navigate('/seller/products');
     } catch (err) {
-      console.error('Failed to import products:', err);
       setError('Failed to import products. Please try again.');
       setImportModal({ open: false, overwrite: false });
     } finally {
