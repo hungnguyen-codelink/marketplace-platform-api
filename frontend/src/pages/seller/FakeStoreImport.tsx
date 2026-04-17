@@ -54,7 +54,7 @@ export default function FakeStoreImport() {
 
   const handleImportClick = () => {
     if (selected.size === 0) return;
-    setImportModal({ open: true, overwrite: false });
+    setImportModal({ ...importModal, open: true });
   };
 
   const handleImportConfirm = async () => {
@@ -171,7 +171,7 @@ export default function FakeStoreImport() {
         open={importModal.open}
         title="Confirm Import"
         onClose={() => {
-          if (!importing) setImportModal({ open: false, overwrite: false });
+          if (!importing) setImportModal({ ...importModal, open: false });
         }}
         onConfirm={handleImportConfirm}
         confirmLabel="Import"

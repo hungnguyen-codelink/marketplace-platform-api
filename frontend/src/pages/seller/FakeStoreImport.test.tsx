@@ -307,6 +307,51 @@ describe('FakeStoreImport', () => {
       expect(mockImportProducts).not.toHaveBeenCalled();
     });
 
+    it('[FakeStoreImport] Overwrite checkbox state persists when reopening dialog', async () => {
+      const user = userEvent.setup();
+      mockGetProducts.mockResolvedValue(mockProducts);
+
+      renderWithProviders(<FakeStoreImport />);
+
+      await waitFor(() => {
+        const checkboxes = screen.getAllByRole('checkbox');
+        expect(checkboxes.length).toBeGreaterThanOrEqual(1);
+      });
+
+      const productCheckbox = screen.getAllByRole('checkbox')[0];
+      await user.click(productCheckbox);
+
+      const importButton = screen.getByRole('button', { name: /import/i });
+      await user.click(importButton);
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { name: /confirm/i })).toBeInTheDocument();
+      });
+
+      const overwriteCheckbox = screen.getByLabelText(/overwrite/i);
+      await user.click(overwriteCheckbox);
+
+      await waitFor(() => {
+        expect((overwriteCheckbox as HTMLInputElement).checked).toBe(true);
+      });
+
+      const cancelButton = screen.getByRole('button', { name: /cancel/i });
+      await user.click(cancelButton);
+
+      await waitFor(() => {
+        expect(screen.queryByRole('heading', { name: /confirm/i })).not.toBeInTheDocument();
+      });
+
+      await user.click(importButton);
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { name: /confirm/i })).toBeInTheDocument();
+      });
+
+      const overwriteCheckboxAfterReopen = screen.getByLabelText(/overwrite/i) as HTMLInputElement;
+      expect(overwriteCheckboxAfterReopen.checked).toBe(true);
+    });
+
     it('[FakeStoreImport] Confirm calls POST /api/fakestore/import with overwrite=false when unchecked', async () => {
       const user = userEvent.setup();
       mockGetProducts.mockResolvedValue(mockProducts);
