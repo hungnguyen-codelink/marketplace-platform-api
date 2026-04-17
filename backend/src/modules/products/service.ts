@@ -103,7 +103,7 @@ export class ProductsService {
     let paramCount = 1;
 
     if (params.search) {
-      query += ` AND (title ILIKE $${paramCount} OR description ILIKE $${paramCount})`;
+      query += ` AND (title ILIKE $${paramCount} OR description ILIKE $${paramCount} OR category ILIKE $${paramCount})`;
       values.push(`%${params.search}%`);
       paramCount++;
     }

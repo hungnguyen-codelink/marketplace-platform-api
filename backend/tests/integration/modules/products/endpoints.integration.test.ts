@@ -418,6 +418,21 @@ describe('Products Endpoints - Integration Tests', () => {
       expect(res.body.some((p: any) => p.title.toLowerCase().includes('laptop'))).toBe(true);
     });
 
+    it('should filter by search term matching category (case-insensitive)', async () => {
+      const sellerId = await createUser('seller@example.com', 'seller');
+      const shopId = await createShop(sellerId);
+
+      await createProduct(shopId, { title: 'Office Chair', description: 'Comfortable seating', category: 'Furniture' });
+      await createProduct(shopId, { title: 'Desk Lamp', description: 'LED light', category: 'Electronics' });
+      await createProduct(shopId, { title: 'Random Item', description: 'No match here', category: 'FURNITURE' });
+
+      const res = await request(app).get('/api/products?search=furniture');
+
+      expect(res.status).toBe(200);
+      expect(res.body.length).toBeGreaterThanOrEqual(2);
+      expect(res.body.some((p: any) => p.category && p.category.toLowerCase() === 'furniture')).toBe(true);
+    });
+
     it('should filter by category (exact match)', async () => {
       const sellerId = await createUser('seller@example.com', 'seller');
       const shopId = await createShop(sellerId);

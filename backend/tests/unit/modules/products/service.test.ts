@@ -150,6 +150,24 @@ describe('Products Service - Unit Tests', () => {
       expect(call[1][2]).toBe(0); // offset for page 1
     });
 
+    it('should filter by search term matching category (case-insensitive)', async () => {
+      const mockProductRows: any[] = [];
+
+      (db.query as jest.Mock).mockResolvedValueOnce({
+        rows: mockProductRows,
+      });
+
+      await productsService.getProducts({ search: 'electronics' });
+
+      expect(db.query).toHaveBeenCalled();
+      const call = (db.query as jest.Mock).mock.calls[0];
+      expect(call[0]).toContain('ILIKE');
+      expect(call[0]).toContain('category ILIKE');
+      expect(call[1][0]).toBe('%electronics%');
+      expect(call[1][1]).toBe(10); // limit
+      expect(call[1][2]).toBe(0); // offset for page 1
+    });
+
     it('should filter by category (exact match)', async () => {
       const mockProductRows: any[] = [];
 
