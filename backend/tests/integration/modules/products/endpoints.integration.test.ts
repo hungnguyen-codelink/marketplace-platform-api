@@ -371,8 +371,11 @@ describe('Products Endpoints - Integration Tests', () => {
       const res = await request(app).get('/api/products');
 
       expect(res.status).toBe(200);
-      expect(res.body).toHaveLength(10);
-      expect(res.body[0]).not.toHaveProperty('fakestore_id');
+      expect(res.body.data).toHaveLength(10);
+      expect(res.body.total).toBeGreaterThanOrEqual(10);
+      expect(res.body.page).toBe(1);
+      expect(res.body.limit).toBe(10);
+      expect(res.body.data[0]).not.toHaveProperty('fakestore_id');
     });
 
     it('should support custom limit', async () => {
@@ -386,7 +389,9 @@ describe('Products Endpoints - Integration Tests', () => {
       const res = await request(app).get('/api/products?limit=5');
 
       expect(res.status).toBe(200);
-      expect(res.body).toHaveLength(5);
+      expect(res.body.data).toHaveLength(5);
+      expect(res.body.total).toBeGreaterThanOrEqual(5);
+      expect(res.body.limit).toBe(5);
     });
 
     it('should support pagination with page parameter', async () => {
@@ -400,7 +405,10 @@ describe('Products Endpoints - Integration Tests', () => {
       const res = await request(app).get('/api/products?limit=10&page=2');
 
       expect(res.status).toBe(200);
-      expect(res.body).toHaveLength(10);
+      expect(res.body.data).toHaveLength(10);
+      expect(res.body.total).toBe(25);
+      expect(res.body.page).toBe(2);
+      expect(res.body.limit).toBe(10);
     });
 
     it('should filter by search term (case-insensitive)', async () => {
@@ -414,8 +422,8 @@ describe('Products Endpoints - Integration Tests', () => {
       const res = await request(app).get('/api/products?search=laptop');
 
       expect(res.status).toBe(200);
-      expect(res.body.length).toBeGreaterThanOrEqual(2);
-      expect(res.body.some((p: any) => p.title.toLowerCase().includes('laptop'))).toBe(true);
+      expect(res.body.data.length).toBeGreaterThanOrEqual(2);
+      expect(res.body.data.some((p: any) => p.title.toLowerCase().includes('laptop'))).toBe(true);
     });
 
     it('should filter by search term matching category (case-insensitive)', async () => {
@@ -429,8 +437,8 @@ describe('Products Endpoints - Integration Tests', () => {
       const res = await request(app).get('/api/products?search=furniture');
 
       expect(res.status).toBe(200);
-      expect(res.body.length).toBeGreaterThanOrEqual(2);
-      expect(res.body.some((p: any) => p.category && p.category.toLowerCase() === 'furniture')).toBe(true);
+      expect(res.body.data.length).toBeGreaterThanOrEqual(2);
+      expect(res.body.data.some((p: any) => p.category && p.category.toLowerCase() === 'furniture')).toBe(true);
     });
 
     it('should filter by category (exact match)', async () => {
@@ -444,8 +452,8 @@ describe('Products Endpoints - Integration Tests', () => {
       const res = await request(app).get('/api/products?category=Electronics');
 
       expect(res.status).toBe(200);
-      expect(res.body.length).toBeGreaterThanOrEqual(2);
-      expect(res.body.every((p: any) => p.category === 'Electronics')).toBe(true);
+      expect(res.body.data.length).toBeGreaterThanOrEqual(2);
+      expect(res.body.data.every((p: any) => p.category === 'Electronics')).toBe(true);
     });
 
     it('should filter by search and category together', async () => {
@@ -459,7 +467,7 @@ describe('Products Endpoints - Integration Tests', () => {
       const res = await request(app).get('/api/products?search=mouse&category=Electronics');
 
       expect(res.status).toBe(200);
-      expect(res.body.every((p: any) => p.category === 'Electronics')).toBe(true);
+      expect(res.body.data.every((p: any) => p.category === 'Electronics')).toBe(true);
     });
 
     it('should not expose fakestore_id in response', async () => {
@@ -471,7 +479,7 @@ describe('Products Endpoints - Integration Tests', () => {
       const res = await request(app).get('/api/products');
 
       expect(res.status).toBe(200);
-      expect(res.body[0]).not.toHaveProperty('fakestore_id');
+      expect(res.body.data[0]).not.toHaveProperty('fakestore_id');
     });
   });
 

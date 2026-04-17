@@ -81,7 +81,7 @@ export default function ProductDetail() {
           </h1>
 
           <p className="mb-6 text-gray-600">
-            {product.description}
+            {product.description || 'No description provided'}
           </p>
 
           {/* Price */}

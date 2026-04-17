@@ -99,34 +99,50 @@ export class ProductsService {
     }
   }
 
-  async getProducts(params: GetProductsParams): Promise<ProductResponse[]> {
+  async getProducts(params: GetProductsParams): Promise<PaginatedProductResponse> {
     const page = params.page || 1;
     const limit = params.limit || 10;
     const offset = (page - 1) * limit;
 
-    let query =
+    let baseQuery =
       'SELECT id, shop_id, title, description, price, image_url, category, stock, aggregate_rating, review_count, created_at, updated_at FROM products WHERE 1=1';
     const values: any[] = [];
     let paramCount = 1;
 
     if (params.search) {
-      query += ` AND (title ILIKE $${paramCount} OR description ILIKE $${paramCount} OR category ILIKE $${paramCount})`;
+      baseQuery += ` AND (title ILIKE $${paramCount} OR description ILIKE $${paramCount} OR category ILIKE $${paramCount})`;
       values.push(`%${params.search}%`);
       paramCount++;
     }
 
     if (params.category) {
-      query += ` AND category = $${paramCount}`;
+      baseQuery += ` AND category = $${paramCount}`;
       values.push(params.category);
       paramCount++;
     }
 
-    query += ` ORDER BY created_at DESC LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
+    // Get total count
+    const countQuery = `SELECT COUNT(*) as count FROM products WHERE 1=1${params.search ? ` AND (title ILIKE $1 OR description ILIKE $1 OR category ILIKE $1)` : ''}${params.category ? ` AND category = $${params.search ? 2 : 1}` : ''}`;
+    const countValues: any[] = [];
+    let countParamCount = 1;
+    if (params.search) {
+      countValues.push(`%${params.search}%`);
+      countParamCount++;
+    }
+    if (params.category) {
+      countValues.push(params.category);
+    }
+
+    const countResult = await db.query(countQuery, countValues);
+    const total = parseInt(countResult.rows[0].count, 10);
+
+    // Get paginated products
+    baseQuery += ` ORDER BY created_at DESC LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
     values.push(limit, offset);
 
-    const result = await db.query(query, values);
+    const result = await db.query(baseQuery, values);
 
-    return result.rows.map((product) => ({
+    const data = result.rows.map((product) => ({
       id: product.id,
       shop_id: product.shop_id,
       title: product.title,
@@ -140,6 +156,13 @@ export class ProductsService {
       created_at: product.created_at,
       updated_at: product.updated_at,
     }));
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+    };
   }
 
   async getProductById(productId: string): Promise<ProductResponse> {

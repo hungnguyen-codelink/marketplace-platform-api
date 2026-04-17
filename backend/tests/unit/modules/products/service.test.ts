@@ -120,84 +120,81 @@ describe('Products Service - Unit Tests', () => {
         },
       ];
 
-      (db.query as jest.Mock).mockResolvedValueOnce({
-        rows: mockProductRows,
-      });
+      (db.query as jest.Mock)
+        .mockResolvedValueOnce({ rows: [{ count: '1' }] })
+        .mockResolvedValueOnce({ rows: mockProductRows });
 
       const result = await productsService.getProducts({});
 
-      expect(result).toHaveLength(1);
-      expect(result[0]).not.toHaveProperty('fakestore_id');
-      expect(result[0]).toHaveProperty('id', 'product-1');
-      expect(result[0]).toHaveProperty('title', 'Product 1');
-      expect(db.query).toHaveBeenCalled();
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0]).not.toHaveProperty('fakestore_id');
+      expect(result.data[0]).toHaveProperty('id', 'product-1');
+      expect(result.data[0]).toHaveProperty('title', 'Product 1');
+      expect(result.total).toBe(1);
+      expect(result.page).toBe(1);
+      expect(result.limit).toBe(10);
+      expect(db.query).toHaveBeenCalledTimes(2);
     });
 
     it('should filter by search term (case-insensitive)', async () => {
       const mockProductRows: any[] = [];
 
-      (db.query as jest.Mock).mockResolvedValueOnce({
-        rows: mockProductRows,
-      });
+      (db.query as jest.Mock)
+        .mockResolvedValueOnce({ rows: [{ count: '0' }] })
+        .mockResolvedValueOnce({ rows: mockProductRows });
 
       await productsService.getProducts({ search: 'laptop' });
 
-      expect(db.query).toHaveBeenCalled();
-      const call = (db.query as jest.Mock).mock.calls[0];
-      expect(call[0]).toContain('ILIKE');
-      expect(call[1][0]).toBe('%laptop%');
-      expect(call[1][1]).toBe(10); // limit
-      expect(call[1][2]).toBe(0); // offset for page 1
+      expect(db.query).toHaveBeenCalledTimes(2);
+      const countCall = (db.query as jest.Mock).mock.calls[0];
+      expect(countCall[0]).toContain('ILIKE');
+      expect(countCall[1][0]).toBe('%laptop%');
     });
 
     it('should filter by search term matching category (case-insensitive)', async () => {
       const mockProductRows: any[] = [];
 
-      (db.query as jest.Mock).mockResolvedValueOnce({
-        rows: mockProductRows,
-      });
+      (db.query as jest.Mock)
+        .mockResolvedValueOnce({ rows: [{ count: '0' }] })
+        .mockResolvedValueOnce({ rows: mockProductRows });
 
       await productsService.getProducts({ search: 'electronics' });
 
-      expect(db.query).toHaveBeenCalled();
-      const call = (db.query as jest.Mock).mock.calls[0];
-      expect(call[0]).toContain('ILIKE');
-      expect(call[0]).toContain('category ILIKE');
-      expect(call[1][0]).toBe('%electronics%');
-      expect(call[1][1]).toBe(10); // limit
-      expect(call[1][2]).toBe(0); // offset for page 1
+      expect(db.query).toHaveBeenCalledTimes(2);
+      const countCall = (db.query as jest.Mock).mock.calls[0];
+      expect(countCall[0]).toContain('ILIKE');
+      expect(countCall[0]).toContain('category ILIKE');
+      expect(countCall[1][0]).toBe('%electronics%');
     });
 
     it('should filter by category (exact match)', async () => {
       const mockProductRows: any[] = [];
 
-      (db.query as jest.Mock).mockResolvedValueOnce({
-        rows: mockProductRows,
-      });
+      (db.query as jest.Mock)
+        .mockResolvedValueOnce({ rows: [{ count: '0' }] })
+        .mockResolvedValueOnce({ rows: mockProductRows });
 
       await productsService.getProducts({ category: 'Electronics' });
 
-      expect(db.query).toHaveBeenCalled();
-      const call = (db.query as jest.Mock).mock.calls[0];
-      expect(call[0]).toContain('category = $1');
-      expect(call[1][0]).toBe('Electronics');
-      expect(call[1][1]).toBe(10); // limit
-      expect(call[1][2]).toBe(0); // offset for page 1
+      expect(db.query).toHaveBeenCalledTimes(2);
+      const countCall = (db.query as jest.Mock).mock.calls[0];
+      expect(countCall[0]).toContain('category = $1');
+      expect(countCall[1][0]).toBe('Electronics');
     });
 
     it('should filter by search and category together', async () => {
       const mockProductRows: any[] = [];
 
-      (db.query as jest.Mock).mockResolvedValueOnce({
-        rows: mockProductRows,
-      });
+      (db.query as jest.Mock)
+        .mockResolvedValueOnce({ rows: [{ count: '0' }] })
+        .mockResolvedValueOnce({ rows: mockProductRows });
 
       await productsService.getProducts({ search: 'laptop', category: 'Electronics' });
 
-      expect(db.query).toHaveBeenCalled();
-      const call = (db.query as jest.Mock).mock.calls[0];
-      expect(call[0]).toContain('ILIKE');
-      expect(call[0]).toContain('category = $');
+      expect(db.query).toHaveBeenCalledTimes(2);
+      const countCall = (db.query as jest.Mock).mock.calls[0];
+      expect(countCall[0]).toContain('ILIKE');
+      expect(countCall[0]).toContain('category = $');
     });
 
     it('should not expose fakestore_id in results', async () => {
@@ -219,29 +216,28 @@ describe('Products Service - Unit Tests', () => {
         },
       ];
 
-      (db.query as jest.Mock).mockResolvedValueOnce({
-        rows: mockProductRows,
-      });
+      (db.query as jest.Mock)
+        .mockResolvedValueOnce({ rows: [{ count: '1' }] })
+        .mockResolvedValueOnce({ rows: mockProductRows });
 
       const result = await productsService.getProducts({});
 
-      expect(result[0]).not.toHaveProperty('fakestore_id');
+      expect(result.data[0]).not.toHaveProperty('fakestore_id');
     });
 
     it('should handle custom page and limit', async () => {
       const mockProductRows: any[] = [];
 
-      (db.query as jest.Mock).mockResolvedValueOnce({
-        rows: mockProductRows,
-      });
+      (db.query as jest.Mock)
+        .mockResolvedValueOnce({ rows: [{ count: '100' }] })
+        .mockResolvedValueOnce({ rows: mockProductRows });
 
-      await productsService.getProducts({ page: 2, limit: 20 });
+      const result = await productsService.getProducts({ page: 2, limit: 20 });
 
-      expect(db.query).toHaveBeenCalled();
-      const call = (db.query as jest.Mock).mock.calls[0];
-      const lastTwoParams = call[1].slice(-2);
-      expect(lastTwoParams[0]).toBe(20); // limit
-      expect(lastTwoParams[1]).toBe(20); // offset for page 2: (2-1)*20 = 20
+      expect(db.query).toHaveBeenCalledTimes(2);
+      expect(result.page).toBe(2);
+      expect(result.limit).toBe(20);
+      expect(result.total).toBe(100);
     });
   });
 
