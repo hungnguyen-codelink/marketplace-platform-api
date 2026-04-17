@@ -79,6 +79,17 @@ export interface Review {
   created_at: string;
 }
 
+export interface FakestoreProduct {
+  fakestore_id: number;
+  title: string;
+  price: number;
+  description: string;
+  category: string;
+  image_url: string | null;
+  aggregate_rating: number;
+  review_count: number;
+}
+
 export interface CartItem {
   product_id: string;
   quantity: number;
