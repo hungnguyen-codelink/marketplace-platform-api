@@ -8,6 +8,7 @@ import { fakestoreRouter } from './modules/fakestore/router';
 import { cartRouter } from './modules/cart/router';
 import { ordersRouter, sellerOrdersRouter } from './modules/orders/router';
 import { mockPaymentRouter } from './modules/payment/router';
+import { reviewsRouter } from './modules/reviews/router';
 import { asyncHandler } from './utils/asyncHandler';
 
 export function createApp() {
@@ -28,6 +29,7 @@ export function createApp() {
   app.use('/api/orders', ordersRouter);
   app.use('/api/seller/orders', sellerOrdersRouter);
   app.use('/api/mock-payment', mockPaymentRouter);
+  app.use('/api/reviews', reviewsRouter);
 
   app.use(errorHandler);
 

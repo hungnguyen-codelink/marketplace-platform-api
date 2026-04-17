@@ -94,6 +94,8 @@ exports.productsRouter = (0, express_1.Router)();
 exports.productsRouter.post('/', authenticate_1.authenticate, (0, requireRole_1.requireRole)('seller'), (0, validate_1.validate)(createProductSchema), (0, asyncHandler_1.asyncHandler)((req, res) => controller_1.productsController.createProduct(req, res)));
 // GET /api/products — get products with search and category filters (public, paginated)
 exports.productsRouter.get('/', (0, asyncHandler_1.asyncHandler)((req, res) => controller_1.productsController.getProducts(req, res)));
+// GET /api/products/my — get current seller's products (seller only)
+exports.productsRouter.get('/my', authenticate_1.authenticate, (0, requireRole_1.requireRole)('seller'), (0, asyncHandler_1.asyncHandler)((req, res) => controller_1.productsController.getMyProducts(req, res)));
 // GET /api/products/:id — get product by ID (public)
 exports.productsRouter.get('/:id', (0, asyncHandler_1.asyncHandler)((req, res) => controller_1.productsController.getProductById(req, res)));
 // PUT /api/products/:id — update product (seller only)

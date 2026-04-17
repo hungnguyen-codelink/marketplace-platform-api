@@ -32,6 +32,12 @@ class ProductsController {
         await service_1.productsService.deleteProduct(req.user.id, req.params.id);
         res.status(204).send();
     }
+    async getMyProducts(req, res) {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const result = await service_1.productsService.getMyProducts(req.user.id, { page, limit });
+        res.json(result);
+    }
 }
 exports.ProductsController = ProductsController;
 exports.productsController = new ProductsController();

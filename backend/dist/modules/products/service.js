@@ -30,11 +30,11 @@ class ProductsService {
                 shop_id: product.shop_id,
                 title: product.title,
                 description: product.description,
-                price: product.price,
+                price: parseFloat(product.price),
                 image_url: product.image_url,
                 category: product.category,
                 stock: product.stock,
-                aggregate_rating: product.aggregate_rating,
+                aggregate_rating: parseFloat(product.aggregate_rating),
                 review_count: product.review_count,
                 created_at: product.created_at,
                 updated_at: product.updated_at,
@@ -48,36 +48,56 @@ class ProductsService {
         const page = params.page || 1;
         const limit = params.limit || 10;
         const offset = (page - 1) * limit;
-        let query = 'SELECT id, shop_id, title, description, price, image_url, category, stock, aggregate_rating, review_count, created_at, updated_at FROM products WHERE 1=1';
+        let baseQuery = 'SELECT id, shop_id, title, description, price, image_url, category, stock, aggregate_rating, review_count, created_at, updated_at FROM products WHERE 1=1';
         const values = [];
         let paramCount = 1;
         if (params.search) {
-            query += ` AND (title ILIKE $${paramCount} OR description ILIKE $${paramCount})`;
+            baseQuery += ` AND (title ILIKE $${paramCount} OR description ILIKE $${paramCount} OR category ILIKE $${paramCount})`;
             values.push(`%${params.search}%`);
             paramCount++;
         }
         if (params.category) {
-            query += ` AND category = $${paramCount}`;
+            baseQuery += ` AND category = $${paramCount}`;
             values.push(params.category);
             paramCount++;
         }
-        query += ` ORDER BY created_at DESC LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
+        // Get total count
+        const countQuery = `SELECT COUNT(*) as count FROM products WHERE 1=1${params.search ? ` AND (title ILIKE $1 OR description ILIKE $1 OR category ILIKE $1)` : ''}${params.category ? ` AND category = $${params.search ? 2 : 1}` : ''}`;
+        const countValues = [];
+        let countParamCount = 1;
+        if (params.search) {
+            countValues.push(`%${params.search}%`);
+            countParamCount++;
+        }
+        if (params.category) {
+            countValues.push(params.category);
+        }
+        const countResult = await client_1.db.query(countQuery, countValues);
+        const total = parseInt(countResult.rows[0].count, 10);
+        // Get paginated products
+        baseQuery += ` ORDER BY created_at DESC LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
         values.push(limit, offset);
-        const result = await client_1.db.query(query, values);
-        return result.rows.map((product) => ({
+        const result = await client_1.db.query(baseQuery, values);
+        const data = result.rows.map((product) => ({
             id: product.id,
             shop_id: product.shop_id,
             title: product.title,
             description: product.description,
-            price: product.price,
+            price: parseFloat(product.price),
             image_url: product.image_url,
             category: product.category,
             stock: product.stock,
-            aggregate_rating: product.aggregate_rating,
+            aggregate_rating: parseFloat(product.aggregate_rating),
             review_count: product.review_count,
             created_at: product.created_at,
             updated_at: product.updated_at,
         }));
+        return {
+            data,
+            total,
+            page,
+            limit,
+        };
     }
     async getProductById(productId) {
         const result = await client_1.db.query('SELECT id, shop_id, title, description, price, image_url, category, stock, aggregate_rating, review_count, created_at, updated_at FROM products WHERE id = $1', [productId]);
@@ -90,11 +110,11 @@ class ProductsService {
             shop_id: product.shop_id,
             title: product.title,
             description: product.description,
-            price: product.price,
+            price: parseFloat(product.price),
             image_url: product.image_url,
             category: product.category,
             stock: product.stock,
-            aggregate_rating: product.aggregate_rating,
+            aggregate_rating: parseFloat(product.aggregate_rating),
             review_count: product.review_count,
             created_at: product.created_at,
             updated_at: product.updated_at,
@@ -165,11 +185,11 @@ class ProductsService {
             shop_id: product.shop_id,
             title: product.title,
             description: product.description,
-            price: product.price,
+            price: parseFloat(product.price),
             image_url: product.image_url,
             category: product.category,
             stock: product.stock,
-            aggregate_rating: product.aggregate_rating,
+            aggregate_rating: parseFloat(product.aggregate_rating),
             review_count: product.review_count,
             created_at: product.created_at,
             updated_at: product.updated_at,
@@ -193,6 +213,54 @@ class ProductsService {
             throw new errors_1.ForbiddenError('Access denied');
         }
         await client_1.db.query('DELETE FROM products WHERE id = $1', [productId]);
+    }
+    async getMyProducts(sellerId, params) {
+        const page = params.page || 1;
+        const limit = params.limit || 10;
+        const offset = (page - 1) * limit;
+        // Get seller's shop
+        const shopResult = await client_1.db.query('SELECT id FROM shops WHERE seller_id = $1', [sellerId]);
+        // If no shop found, return empty result (seller just has no products yet)
+        if (shopResult.rows.length === 0) {
+            return {
+                data: [],
+                total: 0,
+                page,
+                limit,
+            };
+        }
+        const shopId = shopResult.rows[0].id;
+        // Get total count of products for this seller
+        const countResult = await client_1.db.query('SELECT COUNT(*) as count FROM products WHERE shop_id = $1', [
+            shopId,
+        ]);
+        const total = parseInt(countResult.rows[0].count, 10);
+        // Get paginated products
+        const productsResult = await client_1.db.query(`SELECT id, shop_id, title, description, price, image_url, category, stock, aggregate_rating, review_count, created_at, updated_at
+       FROM products
+       WHERE shop_id = $1
+       ORDER BY created_at DESC
+       LIMIT $2 OFFSET $3`, [shopId, limit, offset]);
+        const data = productsResult.rows.map((product) => ({
+            id: product.id,
+            shop_id: product.shop_id,
+            title: product.title,
+            description: product.description,
+            price: parseFloat(product.price),
+            image_url: product.image_url,
+            category: product.category,
+            stock: product.stock,
+            aggregate_rating: parseFloat(product.aggregate_rating),
+            review_count: product.review_count,
+            created_at: product.created_at,
+            updated_at: product.updated_at,
+        }));
+        return {
+            data,
+            total,
+            page,
+            limit,
+        };
     }
 }
 exports.ProductsService = ProductsService;

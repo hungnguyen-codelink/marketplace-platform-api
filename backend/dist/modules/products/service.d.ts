@@ -34,11 +34,21 @@ export interface GetProductsParams {
     page?: number;
     limit?: number;
 }
+export interface PaginatedProductResponse {
+    data: ProductResponse[];
+    total: number;
+    page: number;
+    limit: number;
+}
 export declare class ProductsService {
     createProduct(sellerId: string, payload: CreateProductPayload): Promise<ProductResponse>;
-    getProducts(params: GetProductsParams): Promise<ProductResponse[]>;
+    getProducts(params: GetProductsParams): Promise<PaginatedProductResponse>;
     getProductById(productId: string): Promise<ProductResponse>;
     updateProduct(sellerId: string, productId: string, payload: UpdateProductPayload): Promise<ProductResponse>;
     deleteProduct(sellerId: string, productId: string): Promise<void>;
+    getMyProducts(sellerId: string, params: {
+        page?: number;
+        limit?: number;
+    }): Promise<PaginatedProductResponse>;
 }
 export declare const productsService: ProductsService;

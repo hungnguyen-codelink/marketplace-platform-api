@@ -5,5 +5,6 @@ export declare class ProductsController {
     getProductById(req: Request, res: Response): Promise<void>;
     updateProduct(req: Request, res: Response): Promise<void>;
     deleteProduct(req: Request, res: Response): Promise<void>;
+    getMyProducts(req: Request, res: Response): Promise<void>;
 }
 export declare const productsController: ProductsController;
