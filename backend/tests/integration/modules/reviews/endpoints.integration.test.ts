@@ -268,7 +268,7 @@ describe('Reviews Endpoints - Integration Tests', () => {
         .post('/api/reviews')
         .set('Authorization', `Bearer ${token}`)
         .send({
-          order_item_id: 'nonexistent-item-id',
+          order_item_id: '00000000-0000-0000-0000-000000000000',
           rating: 5,
           text: 'Great!',
         });
