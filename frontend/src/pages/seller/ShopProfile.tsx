@@ -11,6 +11,7 @@ import type { Shop } from '../../types';
 interface FormErrors {
   name?: string;
   contact_email?: string;
+  submit?: string;
 }
 
 export default function ShopProfile() {
@@ -88,7 +89,7 @@ export default function ShopProfile() {
       addToast('Shop updated successfully!', 'success');
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Failed to update shop. Please try again.';
-      setErrors({ ...errors, contact_email: errorMessage });
+      setErrors({ submit: errorMessage });
     } finally {
       setSaving(false);
     }
@@ -111,6 +112,11 @@ export default function ShopProfile() {
       <h1 className="mb-8 text-2xl font-bold text-gray-900">Shop Profile</h1>
 
       <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        {errors.submit && (
+          <div className="mb-6 rounded-md bg-red-50 p-4">
+            <p className="text-sm text-red-700">{errors.submit}</p>
+          </div>
+        )}
         <form className="space-y-6" onSubmit={handleSubmit}>
           <FormField
             label="Shop Name"
@@ -131,7 +137,6 @@ export default function ShopProfile() {
           <FormField
             label="Description"
             htmlFor="description"
-            error={errors.description}
           >
             <Input
               id="description"
@@ -146,7 +151,6 @@ export default function ShopProfile() {
           <FormField
             label="Banner URL"
             htmlFor="banner_url"
-            error={errors.banner_url}
           >
             <Input
               id="banner_url"
