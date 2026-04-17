@@ -3,6 +3,7 @@ import cors from 'cors';
 import { errorHandler } from './middleware/errorHandler';
 import { authRouter } from './modules/auth/router';
 import { shopsRouter } from './modules/shops/router';
+import { productsRouter } from './modules/products/router';
 import { asyncHandler } from './utils/asyncHandler';
 
 export function createApp() {
@@ -17,6 +18,7 @@ export function createApp() {
 
   app.use('/api/auth', authRouter);
   app.use('/api/shops', shopsRouter);
+  app.use('/api/products', productsRouter);
 
   app.use(errorHandler);
 
