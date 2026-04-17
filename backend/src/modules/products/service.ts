@@ -41,6 +41,13 @@ export interface GetProductsParams {
   limit?: number;
 }
 
+export interface PaginatedProductResponse {
+  data: ProductResponse[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 export class ProductsService {
   async createProduct(
     sellerId: string,
@@ -274,6 +281,68 @@ export class ProductsService {
     }
 
     await db.query('DELETE FROM products WHERE id = $1', [productId]);
+  }
+
+  async getMyProducts(
+    sellerId: string,
+    params: { page?: number; limit?: number }
+  ): Promise<PaginatedProductResponse> {
+    const page = params.page || 1;
+    const limit = params.limit || 10;
+    const offset = (page - 1) * limit;
+
+    // Get seller's shop
+    const shopResult = await db.query('SELECT id FROM shops WHERE seller_id = $1', [sellerId]);
+
+    // If no shop found, return empty result (seller just has no products yet)
+    if (shopResult.rows.length === 0) {
+      return {
+        data: [],
+        total: 0,
+        page,
+        limit,
+      };
+    }
+
+    const shopId = shopResult.rows[0].id;
+
+    // Get total count of products for this seller
+    const countResult = await db.query('SELECT COUNT(*) as count FROM products WHERE shop_id = $1', [
+      shopId,
+    ]);
+    const total = parseInt(countResult.rows[0].count, 10);
+
+    // Get paginated products
+    const productsResult = await db.query(
+      `SELECT id, shop_id, title, description, price, image_url, category, stock, aggregate_rating, review_count, created_at, updated_at
+       FROM products
+       WHERE shop_id = $1
+       ORDER BY created_at DESC
+       LIMIT $2 OFFSET $3`,
+      [shopId, limit, offset]
+    );
+
+    const data = productsResult.rows.map((product) => ({
+      id: product.id,
+      shop_id: product.shop_id,
+      title: product.title,
+      description: product.description,
+      price: parseFloat(product.price),
+      image_url: product.image_url,
+      category: product.category,
+      stock: product.stock,
+      aggregate_rating: parseFloat(product.aggregate_rating),
+      review_count: product.review_count,
+      created_at: product.created_at,
+      updated_at: product.updated_at,
+    }));
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+    };
   }
 }
 

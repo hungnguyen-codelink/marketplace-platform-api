@@ -426,4 +426,94 @@ describe('Products Service - Unit Tests', () => {
       );
     });
   });
+
+  describe('getMyProducts()', () => {
+    it('should return empty result with pagination metadata when seller has no shop', async () => {
+      const sellerId = 'seller-no-shop';
+
+      (db.query as jest.Mock).mockResolvedValueOnce({
+        rows: [],
+      });
+
+      const result = await productsService.getMyProducts(sellerId, { page: 1, limit: 10 });
+
+      expect(result).toEqual({
+        data: [],
+        total: 0,
+        page: 1,
+        limit: 10,
+      });
+    });
+
+    it('should return paginated list of seller\'s products without fakestore_id', async () => {
+      const sellerId = 'seller-123';
+      const shopId = 'shop-123';
+
+      const mockProductRows = [
+        {
+          id: 'product-1',
+          shop_id: shopId,
+          fakestore_id: 1,
+          title: 'Product 1',
+          description: 'Desc 1',
+          price: 10.0,
+          image_url: 'https://example.com/1.jpg',
+          category: 'Electronics',
+          stock: 50,
+          aggregate_rating: 4.5,
+          review_count: 10,
+          created_at: '2025-01-01T00:00:00.000Z',
+          updated_at: '2025-01-01T00:00:00.000Z',
+        },
+      ];
+
+      (db.query as jest.Mock)
+        .mockResolvedValueOnce({ rows: [{ id: shopId }] })
+        .mockResolvedValueOnce({ rows: [{ count: '1' }] })
+        .mockResolvedValueOnce({ rows: mockProductRows });
+
+      const result = await productsService.getMyProducts(sellerId, { page: 1, limit: 10 });
+
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0]).not.toHaveProperty('fakestore_id');
+      expect(result.total).toBe(1);
+      expect(result.page).toBe(1);
+      expect(result.limit).toBe(10);
+      expect(result.data[0]).toEqual({
+        id: 'product-1',
+        shop_id: shopId,
+        title: 'Product 1',
+        description: 'Desc 1',
+        price: 10.0,
+        image_url: 'https://example.com/1.jpg',
+        category: 'Electronics',
+        stock: 50,
+        aggregate_rating: 4.5,
+        review_count: 10,
+        created_at: '2025-01-01T00:00:00.000Z',
+        updated_at: '2025-01-01T00:00:00.000Z',
+      });
+    });
+
+    it('should handle custom page and limit parameters', async () => {
+      const sellerId = 'seller-123';
+      const shopId = 'shop-123';
+
+      (db.query as jest.Mock)
+        .mockResolvedValueOnce({ rows: [{ id: shopId }] })
+        .mockResolvedValueOnce({ rows: [{ count: '50' }] })
+        .mockResolvedValueOnce({ rows: [] });
+
+      const result = await productsService.getMyProducts(sellerId, { page: 2, limit: 20 });
+
+      expect(result.page).toBe(2);
+      expect(result.limit).toBe(20);
+      expect(result.total).toBe(50);
+      expect(db.query).toHaveBeenCalledTimes(3);
+      // Verify the query was called with correct offset
+      const productQueryCall = (db.query as jest.Mock).mock.calls[2];
+      expect(productQueryCall[1][1]).toBe(20); // limit
+      expect(productQueryCall[1][2]).toBe(20); // offset for page 2: (2-1)*20
+    });
+  });
 });

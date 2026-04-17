@@ -37,6 +37,13 @@ export class ProductsController {
     await productsService.deleteProduct(req.user!.id, req.params.id);
     res.status(204).send();
   }
+
+  async getMyProducts(req: Request, res: Response) {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const result = await productsService.getMyProducts(req.user!.id, { page, limit });
+    res.json(result);
+  }
 }
 
 export const productsController = new ProductsController();

@@ -725,4 +725,106 @@ describe('Products Endpoints - Integration Tests', () => {
       expect(res.body.message).toBe('Product not found');
     });
   });
+
+  describe('GET /api/products/my', () => {
+    it('should return empty list with pagination metadata when seller has no shop', async () => {
+      const sellerId = await createUser('seller@example.com', 'seller');
+      const token = createToken(sellerId, 'seller@example.com', 'seller');
+      await createSession(token, sellerId);
+
+      const res = await request(app)
+        .get('/api/products/my')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({
+        data: [],
+        total: 0,
+        page: 1,
+        limit: 10,
+      });
+    });
+
+    it('should return seller\'s products with pagination metadata', async () => {
+      const sellerId = await createUser('seller@example.com', 'seller');
+      const token = createToken(sellerId, 'seller@example.com', 'seller');
+      await createSession(token, sellerId);
+      const shopId = await createShop(sellerId);
+
+      await createProduct(shopId, { title: 'Product 1' });
+      await createProduct(shopId, { title: 'Product 2' });
+
+      const res = await request(app)
+        .get('/api/products/my')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toHaveLength(2);
+      expect(res.body.total).toBe(2);
+      expect(res.body.page).toBe(1);
+      expect(res.body.limit).toBe(10);
+      expect(res.body.data[0]).not.toHaveProperty('fakestore_id');
+    });
+
+    it('should exclude other sellers\' products', async () => {
+      const seller1Id = await createUser('seller1@example.com', 'seller');
+      const seller2Id = await createUser('seller2@example.com', 'seller');
+
+      const shop1Id = await createShop(seller1Id);
+      const shop2Id = await createShop(seller2Id);
+
+      await createProduct(shop1Id, { title: 'Seller1 Product' });
+      await createProduct(shop2Id, { title: 'Seller2 Product' });
+
+      const token = createToken(seller1Id, 'seller1@example.com', 'seller');
+      await createSession(token, seller1Id);
+
+      const res = await request(app)
+        .get('/api/products/my')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toHaveLength(1);
+      expect(res.body.data[0].title).toBe('Seller1 Product');
+    });
+
+    it('should support pagination with custom limit and page', async () => {
+      const sellerId = await createUser('seller@example.com', 'seller');
+      const token = createToken(sellerId, 'seller@example.com', 'seller');
+      await createSession(token, sellerId);
+      const shopId = await createShop(sellerId);
+
+      for (let i = 0; i < 25; i++) {
+        await createProduct(shopId, { title: `Product ${i}` });
+      }
+
+      const res = await request(app)
+        .get('/api/products/my?page=2&limit=10')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toHaveLength(10);
+      expect(res.body.total).toBe(25);
+      expect(res.body.page).toBe(2);
+      expect(res.body.limit).toBe(10);
+    });
+
+    it('should return 401 for unauthenticated requests', async () => {
+      const res = await request(app).get('/api/products/my');
+
+      expect(res.status).toBe(401);
+    });
+
+    it('should return 403 for non-seller roles', async () => {
+      const buyerId = await createUser('buyer@example.com', 'buyer');
+      const token = createToken(buyerId, 'buyer@example.com', 'buyer');
+      await createSession(token, buyerId);
+
+      const res = await request(app)
+        .get('/api/products/my')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(403);
+    });
+  });
 });

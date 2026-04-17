@@ -106,6 +106,14 @@ productsRouter.get(
   asyncHandler((req, res) => productsController.getProducts(req, res))
 );
 
+// GET /api/products/my — get current seller's products (seller only)
+productsRouter.get(
+  '/my',
+  authenticate,
+  requireRole('seller'),
+  asyncHandler((req, res) => productsController.getMyProducts(req, res))
+);
+
 // GET /api/products/:id — get product by ID (public)
 productsRouter.get(
   '/:id',
