@@ -51,7 +51,7 @@ describe('ProductBrowse', () => {
       ],
       total: 1,
       page: 1,
-      limit: 20,
+      limit: 10,
     });
 
     renderWithProviders(<ProductBrowse />);
@@ -60,7 +60,7 @@ describe('ProductBrowse', () => {
       expect(vi.mocked(productsApi.getProducts)).toHaveBeenCalledWith(
         expect.objectContaining({
           page: 1,
-          limit: 20,
+          limit: 10,
         })
       );
     });
@@ -85,7 +85,7 @@ describe('ProductBrowse', () => {
       data: [],
       total: 0,
       page: 1,
-      limit: 20,
+      limit: 10,
     });
   });
 
@@ -95,7 +95,7 @@ describe('ProductBrowse', () => {
       data: [],
       total: 0,
       page: 1,
-      limit: 20,
+      limit: 10,
     });
 
     renderWithProviders(<ProductBrowse />);
@@ -112,7 +112,7 @@ describe('ProductBrowse', () => {
       data: [],
       total: 0,
       page: 1,
-      limit: 20,
+      limit: 10,
     });
 
     renderWithProviders(<ProductBrowse />);
@@ -140,7 +140,7 @@ describe('ProductBrowse', () => {
       ],
       total: 1,
       page: 1,
-      limit: 20,
+      limit: 10,
     });
 
     const user = userEvent.setup();
@@ -168,7 +168,7 @@ describe('ProductBrowse', () => {
       data: [],
       total: 0,
       page: 1,
-      limit: 20,
+      limit: 10,
     });
 
     const user = userEvent.setup();
@@ -209,7 +209,7 @@ describe('ProductBrowse', () => {
       ],
       total: 1,
       page: 1,
-      limit: 20,
+      limit: 10,
     });
 
     renderWithProviders(<ProductBrowse />);
@@ -238,7 +238,7 @@ describe('ProductBrowse', () => {
       ],
       total: 1,
       page: 1,
-      limit: 20,
+      limit: 10,
     });
 
     renderWithProviders(<ProductBrowse />);
@@ -266,7 +266,7 @@ describe('ProductBrowse', () => {
       ],
       total: 1,
       page: 1,
-      limit: 20,
+      limit: 10,
     });
 
     renderWithProviders(<ProductBrowse />);
@@ -294,10 +294,9 @@ describe('ProductBrowse', () => {
       ],
       total: 1,
       page: 1,
-      limit: 20,
+      limit: 10,
     });
 
-    const user = userEvent.setup();
     renderWithProviders(<ProductBrowse />);
 
     await waitFor(() => {
@@ -305,15 +304,13 @@ describe('ProductBrowse', () => {
     });
 
     const productLink = screen.getByRole('link', { name: 'Laptop' });
-    await user.click(productLink);
-
-    expect(mockNavigate).toHaveBeenCalledWith('/products/prod-1');
+    expect(productLink).toHaveAttribute('href', '/products/prod-1');
   });
 
   it('[ProductBrowse] Has pagination controls', async () => {
     const { productsApi } = await import('../../api/products');
     vi.mocked(productsApi.getProducts).mockResolvedValueOnce({
-      data: Array.from({ length: 20 }, (_, i) => ({
+      data: Array.from({ length: 10 }, (_, i) => ({
         id: `prod-${i}`,
         shop_id: 'shop-1',
         title: `Product ${i}`,
@@ -326,20 +323,20 @@ describe('ProductBrowse', () => {
       })),
       total: 50,
       page: 1,
-      limit: 20,
+      limit: 10,
     });
 
     renderWithProviders(<ProductBrowse />);
 
     await waitFor(() => {
-      expect(screen.getByText(/page 1 of 3/i)).toBeInTheDocument();
+      expect(screen.getByText(/page 1 of 5/i)).toBeInTheDocument();
     });
   });
 
   it('[ProductBrowse] Pagination controls change page', async () => {
     const { productsApi } = await import('../../api/products');
     vi.mocked(productsApi.getProducts).mockResolvedValueOnce({
-      data: Array.from({ length: 20 }, (_, i) => ({
+      data: Array.from({ length: 10 }, (_, i) => ({
         id: `prod-${i}`,
         shop_id: 'shop-1',
         title: `Product ${i}`,
@@ -352,22 +349,22 @@ describe('ProductBrowse', () => {
       })),
       total: 50,
       page: 1,
-      limit: 20,
+      limit: 10,
     });
 
     const user = userEvent.setup();
     renderWithProviders(<ProductBrowse />);
 
     await waitFor(() => {
-      expect(screen.getByText(/page 1 of 3/i)).toBeInTheDocument();
+      expect(screen.getByText(/page 1 of 5/i)).toBeInTheDocument();
     });
 
     vi.mocked(productsApi.getProducts).mockResolvedValueOnce({
-      data: Array.from({ length: 20 }, (_, i) => ({
-        id: `prod-${20 + i}`,
+      data: Array.from({ length: 10 }, (_, i) => ({
+        id: `prod-${10 + i}`,
         shop_id: 'shop-1',
-        title: `Product ${20 + i}`,
-        price: 99.99 + 20 + i,
+        title: `Product ${10 + i}`,
+        price: 99.99 + 10 + i,
         stock: 10,
         aggregate_rating: 4.5,
         review_count: 5,
@@ -376,7 +373,7 @@ describe('ProductBrowse', () => {
       })),
       total: 50,
       page: 2,
-      limit: 20,
+      limit: 10,
     });
 
     const nextButton = screen.getByRole('button', { name: /next/i });

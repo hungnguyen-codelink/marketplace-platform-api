@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { productsApi } from '../../api/products';
 import type { Product, PaginatedResponse } from '../../types';
 import Spinner from '../../components/Spinner';
@@ -17,7 +17,7 @@ export default function ProductBrowse() {
   const [category, setCategory] = useState('');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const limit = 20;
+  const limit = 10;
 
   const totalPages = Math.ceil(total / limit);
 
@@ -54,10 +54,6 @@ export default function ProductBrowse() {
     setPage(1);
   };
 
-  const handleProductClick = (productId: string) => {
-    navigate(`/products/${productId}`);
-  };
-
   const handlePreviousPage = () => {
     if (page > 1) {
       setPage(page - 1);
@@ -85,7 +81,9 @@ export default function ProductBrowse() {
             />
           </div>
           <div className="w-full sm:w-48">
+            <label htmlFor="category-filter" className="sr-only">Filter by category</label>
             <select
+              id="category-filter"
               value={category || 'All Categories'}
               onChange={(e) => handleCategoryChange(e.target.value)}
               className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none"
@@ -116,7 +114,7 @@ export default function ProductBrowse() {
                 key={product.id}
                 className="flex flex-col overflow-hidden rounded-lg border border-gray-200 hover:shadow-lg transition-shadow"
               >
-                {product.image_url && (
+                {product.image_url ? (
                   <div className="h-48 overflow-hidden bg-gray-100">
                     <img
                       src={product.image_url}
@@ -124,15 +122,19 @@ export default function ProductBrowse() {
                       className="h-full w-full object-cover"
                     />
                   </div>
+                ) : (
+                  <div className="flex h-48 w-full items-center justify-center bg-gray-100">
+                    <span className="text-sm text-gray-400">No image</span>
+                  </div>
                 )}
 
                 <div className="flex flex-1 flex-col p-4">
-                  <button
-                    onClick={() => handleProductClick(product.id)}
+                  <Link
+                    to={`/products/${product.id}`}
                     className="mb-2 text-left font-semibold text-gray-900 hover:text-blue-600 transition-colors"
                   >
-                    <a href={`/products/${product.id}`}>{product.title}</a>
-                  </button>
+                    {product.title}
+                  </Link>
 
                   <p className="mb-2 text-lg font-bold text-gray-900">
                     ${product.price.toFixed(2)}
