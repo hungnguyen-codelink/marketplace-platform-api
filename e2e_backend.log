@@ -1,0 +1,36 @@
+
+> backend@0.1.0 test
+> jest tests/integration/modules/shops/endpoints.integration.test.ts
+
+PASS tests/integration/modules/shops/endpoints.integration.test.ts
+  Shops Endpoints - Integration Tests
+    POST /api/shops
+      ✓ should create shop with valid payload, returns 201 with shop object (28 ms)
+      ✓ should reject unauthenticated requests with 401 (12 ms)
+      ✓ should reject non-seller roles with 403 (13 ms)
+      ✓ should return 400 with field-level errors when missing name (15 ms)
+      ✓ should return 400 when optional fields are empty/whitespace-only (14 ms)
+      ✓ should return 409 Conflict when same seller creates shop twice (SHOP-02) (21 ms)
+    GET /api/shops/my
+      ✓ should return 404 when seller has no shop yet (onboarding gate AC-09) (13 ms)
+      ✓ should return 401 for unauthenticated requests (9 ms)
+      ✓ should return 403 for non-seller roles (12 ms)
+      ✓ should return shop after it is created (13 ms)
+    PUT /api/shops/my
+      ✓ should update current seller shop, returns 200 with updated shop object (14 ms)
+      ✓ should return 400 with validation errors for invalid body (12 ms)
+      ✓ should update only provided fields, leaves others unchanged (13 ms)
+      ✓ should return 401 for unauthenticated requests (9 ms)
+      ✓ should return 403 for non-seller roles (11 ms)
+    GET /api/shops/:id
+      ✓ should return shop by ID without auth (12 ms)
+      ✓ should NOT return seller_id in response body for public endpoint (13 ms)
+      ✓ should return 404 if shop not found (10 ms)
+    Onboarding Gate Scenario (AC-09)
+      ✓ should follow complete onboarding flow: no shop → 404 → create shop → success (14 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       19 passed, 19 total
+Snapshots:   0 total
+Time:        0.807 s, estimated 1 s
+Ran all test suites matching /tests\/integration\/modules\/shops\/endpoints.integration.test.ts/i.

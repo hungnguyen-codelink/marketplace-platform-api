@@ -1,0 +1,16 @@
+
+> frontend@0.1.0 test
+> vitest run
+
+9:37:22 AM [vite] warning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.
+9:37:22 AM [vite] warning: `optimizeDeps.esbuildOptions` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `optimizeDeps.rolldownOptions` instead.
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
+
+ RUN  v4.1.4 /Users/nguyenviethung/.config/superpowers/worktrees/marketplace-platform-superpowers/marketplace-implementation/frontend
+
+
+ Test Files  9 passed (9)
+      Tests  65 passed (65)
+   Start at  09:37:22
+   Duration  2.16s (transform 499ms, setup 1.19s, import 879ms, tests 2.64s, environment 6.18s)
+

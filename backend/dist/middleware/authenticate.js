@@ -42,6 +42,8 @@ async function authenticate(req, res, next) {
             email: decoded.email,
             role: decoded.role,
         };
+        // Attach raw token to request for use in logout
+        req.rawToken = token;
         next();
     }
     catch (error) {

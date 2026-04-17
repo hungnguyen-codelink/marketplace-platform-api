@@ -13,16 +13,18 @@ const errors_1 = require("../../errors");
 class AuthService {
     async register(payload) {
         const { email, password, full_name, role } = payload;
+        // Normalize email
+        const normalizedEmail = email.toLowerCase().trim();
         // Hash password
         const passwordHash = await bcryptjs_1.default.hash(password, 10);
         // Insert user
         let userId;
         try {
-            const result = await client_1.db.query('INSERT INTO users (email, password_hash, full_name, role) VALUES ($1, $2, $3, $4) RETURNING id, email, full_name, role', [email, passwordHash, full_name, role]);
+            const result = await client_1.db.query('INSERT INTO users (email, password_hash, full_name, role) VALUES ($1, $2, $3, $4) RETURNING id, email, full_name, role', [normalizedEmail, passwordHash, full_name, role]);
             const user = result.rows[0];
             userId = user.id;
             // Generate JWT token
-            const token = jsonwebtoken_1.default.sign({ id: userId, email, role }, env_1.env.JWT_SECRET, { expiresIn: env_1.env.SESSION_TTL_SECONDS });
+            const token = jsonwebtoken_1.default.sign({ id: userId, email: normalizedEmail, role }, env_1.env.JWT_SECRET, { expiresIn: env_1.env.SESSION_TTL_SECONDS });
             // Create session
             const tokenHash = (0, crypto_1.createHash)('sha256').update(token).digest('hex');
             const expiresAt = new Date(Date.now() + env_1.env.SESSION_TTL_SECONDS * 1000);
@@ -30,7 +32,7 @@ class AuthService {
             return {
                 user: {
                     id: userId,
-                    email,
+                    email: normalizedEmail,
                     full_name,
                     role,
                 },
@@ -47,8 +49,10 @@ class AuthService {
     }
     async login(payload) {
         const { email, password } = payload;
+        // Normalize email
+        const normalizedEmail = email.toLowerCase().trim();
         // Find user by email
-        const userResult = await client_1.db.query('SELECT id, email, password_hash, full_name, role FROM users WHERE email = $1', [email]);
+        const userResult = await client_1.db.query('SELECT id, email, password_hash, full_name, role FROM users WHERE email = $1', [normalizedEmail]);
         if (userResult.rows.length === 0) {
             throw new errors_1.AuthError('Invalid credentials');
         }
