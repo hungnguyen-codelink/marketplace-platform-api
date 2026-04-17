@@ -118,8 +118,9 @@ export default function OrderDetail() {
                                   [item.id]: { submitted: true, alreadyReviewed: false },
                                 }));
                               },
-                              onError: (error: any) => {
-                                if (error?.response?.status === 409) {
+                              onError: (error: unknown) => {
+                                const status = (error as { response?: { status?: number } })?.response?.status;
+                                if (status === 409) {
                                   setReviewStates((prev) => ({
                                     ...prev,
                                     [item.id]: { submitted: false, alreadyReviewed: true },
