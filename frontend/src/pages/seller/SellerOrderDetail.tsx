@@ -145,15 +145,16 @@ export default function SellerOrderDetail() {
         </div>
       </div>
 
-      {order.status === 'completed' ? (
+      {order.status === 'completed' && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
           <p className="text-green-800 font-medium">Order Complete</p>
         </div>
-      ) : (
+      )}
+      {order.status !== 'completed' && (
         <div className="flex justify-end">
           <Button
             onClick={handleStatusUpdate}
-            disabled={isUpdating || order.status === 'completed'}
+            disabled={isUpdating}
             className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-400"
           >
             {isUpdating ? 'Updating...' : buttonLabelMap[order.status]}

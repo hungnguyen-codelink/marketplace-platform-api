@@ -678,6 +678,66 @@ describe('Orders Endpoints - Integration Tests', () => {
       expect(res.status).toBe(404);
     });
 
+    it('should only return seller1 items in multi-seller order (critical security test)', async () => {
+      // Setup: Create two sellers with separate shops and products
+      const seller1Id = await createUser('seller1@example.com', 'seller');
+      const seller2Id = await createUser('seller2@example.com', 'seller');
+      const buyerId = await createUser('buyer@example.com', 'buyer');
+
+      const shop1Id = await createShop(seller1Id, 'Shop 1');
+      const shop2Id = await createShop(seller2Id, 'Shop 2');
+
+      const product1 = await createProduct(shop1Id, { title: 'Product from Seller 1', price: 20.00, stock: 10 });
+      const product2 = await createProduct(shop2Id, { title: 'Product from Seller 2', price: 30.00, stock: 10 });
+
+      const token1 = createToken(seller1Id, 'seller1@example.com', 'seller');
+      await createSession(token1, seller1Id);
+
+      // Create a single order with items from BOTH sellers
+      const orderResult = await db.query(
+        `INSERT INTO orders (buyer_id, shipping_address, total_amount, status)
+         VALUES ($1, $2, $3, $4) RETURNING id`,
+        [
+          buyerId,
+          JSON.stringify({ street: '123 Main St', city: 'NYC', state: 'NY', zip: '10001', country: 'USA' }),
+          '50.00',
+          'confirmed',
+        ]
+      );
+
+      const orderId = orderResult.rows[0].id;
+
+      // Insert order items from both sellers
+      await db.query(
+        `INSERT INTO order_items (order_id, product_id, quantity, unit_price)
+         VALUES ($1, $2, $3, $4), ($5, $6, $7, $8)`,
+        [
+          orderId, product1.id, 1, '20.00',
+          orderId, product2.id, 1, '30.00'
+        ]
+      );
+
+      // When seller1 calls GET /api/seller/orders/:id
+      const res = await request(app)
+        .get(`/api/seller/orders/${orderId}`)
+        .set('Authorization', `Bearer ${token1}`);
+
+      // Then seller1 should:
+      // - Successfully get the order (200 status)
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('id', orderId);
+
+      // - See ONLY their own product(s) (1 item, not 2)
+      expect(res.body.items).toHaveLength(1);
+      expect(res.body.items[0]).toHaveProperty('product_id', product1.id);
+      expect(res.body.items[0]).toHaveProperty('quantity', 1);
+      expect(res.body.items[0]).toHaveProperty('unit_price', '20.00');
+
+      // - NOT see seller2's product
+      const sellerItemIds = res.body.items.map((item: any) => item.product_id);
+      expect(sellerItemIds).not.toContain(product2.id);
+    });
+
     it('should return 404 if order does not exist', async () => {
       const sellerId = await createUser('seller@example.com', 'seller');
       const token = createToken(sellerId, 'seller@example.com', 'seller');

@@ -1,0 +1,125 @@
+solution: "Phase 5 — Orders & Checkout"
+tasks_covered: [5.1, 5.2]
+
+implementation_summary:
+  entry_points:
+    # Cart endpoints
+    - "GET /api/cart — retrieve current user's cart with product details and total"
+    - "POST /api/cart/items — add item to cart { product_id, quantity }"
+    - "PUT /api/cart/items/:productId — update item quantity { quantity } (0 removes)"
+    - "DELETE /api/cart/items/:productId — remove item from cart"
+    - "DELETE /api/cart — clear entire cart"
+
+    # Order (buyer) endpoints
+    - "POST /api/orders/checkout — submit checkout with shipping address"
+    - "GET /api/orders — list buyer's orders paginated (most recent first)"
+    - "GET /api/orders/:id — get single order with items"
+
+    # Seller order management endpoints
+    - "GET /api/seller/orders — list orders containing seller's products (paginated, filterable by status)"
+    - "GET /api/seller/orders/:id — get order detail for seller"
+    - "PATCH /api/seller/orders/:id/status — advance order status (pending→confirmed→shipped→delivered→completed)"
+
+    # Payment mock endpoint
+    - "POST /api/mock-payment — mock payment processor (always succeeds)"
+
+  protected_routes:
+    - "GET /api/cart (authenticate)"
+    - "POST /api/cart/items (authenticate)"
+    - "PUT /api/cart/items/:productId (authenticate)"
+    - "DELETE /api/cart/items/:productId (authenticate)"
+    - "DELETE /api/cart (authenticate)"
+    - "POST /api/orders/checkout (authenticate)"
+    - "GET /api/orders (authenticate)"
+    - "GET /api/orders/:id (authenticate)"
+    - "GET /api/seller/orders (authenticate + requireRole('seller'))"
+    - "GET /api/seller/orders/:id (authenticate + requireRole('seller'))"
+    - "PATCH /api/seller/orders/:id/status (authenticate + requireRole('seller'))"
+
+backend_implementation:
+  technologies: [Express, PostgreSQL, Redis, JWT]
+  key_features:
+    - "Redis-backed cart (HSET/HGET for O(1) item operations)"
+    - "Atomic PostgreSQL checkout with SELECT FOR UPDATE (prevents race conditions)"
+    - "Stock validation and decrement during checkout"
+    - "Order state machine (pending→confirmed→shipped→delivered→completed)"
+    - "Seller order filtering by status and product ownership"
+    - "Pagination for buyer and seller order lists"
+    - "Transaction rollback on payment failure"
+
+frontend_implementation:
+  technologies: [React, React Router, TailwindCSS, Axios, React Query]
+  routes:
+    - "/cart — Cart page with add/remove/update quantity, proceed to checkout"
+    - "/checkout — Checkout form (shipping address + submit button)"
+    - "/checkout/success — Success page after order creation"
+    - "/orders — OrderHistory page (paginated list of buyer's orders)"
+    - "/orders/:id — OrderDetail page with ProgressStepper showing order status"
+    - "/seller/orders — SellerOrders page with status filter tabs (all/pending/confirmed/shipped/delivered/completed)"
+    - "/seller/orders/:id — SellerOrderDetail page with next-state button"
+
+  pages_built:
+    - Cart.tsx
+    - Checkout.tsx
+    - CheckoutSuccess.tsx
+    - OrderHistory.tsx
+    - OrderDetail.tsx (includes ProgressStepper)
+    - SellerOrders.tsx (status filter tabs)
+    - SellerOrderDetail.tsx (next-state button)
+
+test_contract:
+  tiers_required: [e2e, full_suite]
+  rationale: "E2E validates complete purchase flow end-to-end; full_suite ensures no regression across all modules."
+
+  e2e:
+    commands:
+      - "npm run test -w backend -- tests/integration/modules/cart/endpoints.integration.test.ts"
+      - "npm run test -w backend -- tests/integration/modules/orders/endpoints.integration.test.ts"
+      - "npm run test -w frontend"
+
+    scenarios:
+      - "Authenticated buyer adds product to cart, views cart, updates quantity, removes item, clears cart"
+      - "Authenticated buyer checks out with valid shipping address, order created with 'confirmed' status"
+      - "Checkout fails when cart empty, stock insufficient, or shipping address invalid"
+      - "Buyer retrieves single order and order list (paginated, most recent first)"
+      - "Authenticated seller views orders containing their products (paginated)"
+      - "Seller filters orders by status (pending/confirmed/shipped/delivered/completed)"
+      - "Seller views order detail and advances order status through valid state transitions"
+      - "Invalid state transitions (e.g. pending→shipped) return 422 Unprocessable Entity"
+      - "Cart cleared after successful checkout"
+      - "Stock decremented atomically during checkout"
+      - "Transaction rolled back if payment fails"
+
+    required_services:
+      - "PostgreSQL (with orders, order_items, products, shops, users, sessions tables)"
+      - "Redis (for cart HSET storage)"
+      - "Backend API running on http://localhost:3000"
+
+  full_suite:
+    command: "npm run test -w backend && npm run test -w frontend"
+    rationale: "Catch any cross-task regression not visible in individual task ITCs. Validates 356 backend tests + 207 frontend tests all pass."
+
+acceptance_criteria:
+  e2e:
+    - all e2e scenarios execute without errors
+    - cart CRUD operations (add, update, remove, clear) succeed
+    - checkout atomicity confirmed (stock decremented, order created in same transaction)
+    - order state machine enforced (invalid transitions rejected)
+    - seller order filtering by status works
+    - pagination works for buyer and seller order lists
+
+  full_suite:
+    - all backend unit tests pass (356 tests)
+    - all backend integration tests pass (cart, orders, auth, products, fakestore, shops, migrations, middleware, errors)
+    - all frontend unit tests pass (207 tests)
+    - no console errors beyond expected test fixtures
+
+  no_regression:
+    - all cart tests pass (unit + integration)
+    - all order tests pass (unit + integration)
+    - all payment tests pass
+    - no changes to previous task implementations
+
+sign_off:
+  coding_agent: ✅
+  testing_agent: (pending)

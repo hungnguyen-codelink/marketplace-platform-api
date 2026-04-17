@@ -353,8 +353,11 @@ export class OrdersService {
 
     const placeholders = orderIds.map((_, i) => `$${i + 1}`).join(',');
     const itemsResult = await db.query(
-      `SELECT order_id, product_id, quantity, unit_price FROM order_items WHERE order_id IN (${placeholders})`,
-      orderIds
+      `SELECT oi.order_id, oi.product_id, oi.quantity, oi.unit_price
+       FROM order_items oi
+       INNER JOIN products p ON oi.product_id = p.id
+       WHERE oi.order_id IN (${placeholders}) AND p.shop_id = $${orderIds.length + 1}`,
+      [...orderIds, shopId]
     );
 
     const itemsByOrderId = new Map<string, any[]>();
@@ -420,8 +423,11 @@ export class OrdersService {
     const order = orderResult.rows[0];
 
     const itemsResult = await db.query(
-      `SELECT product_id, quantity, unit_price FROM order_items WHERE order_id = $1`,
-      [orderId]
+      `SELECT oi.product_id, oi.quantity, oi.unit_price
+       FROM order_items oi
+       INNER JOIN products p ON oi.product_id = p.id
+       WHERE oi.order_id = $1 AND p.shop_id = $2`,
+      [orderId, shopId]
     );
 
     return {

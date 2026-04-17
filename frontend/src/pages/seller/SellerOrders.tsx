@@ -33,15 +33,20 @@ export default function SellerOrders() {
     limit: 10,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
       setIsLoading(true);
+      setError(null);
       try {
         const params: any = { page: orders.page, limit: orders.limit };
         if (selectedStatus) params.status = selectedStatus;
         const result = await getSellerOrders(params);
         setOrders(result);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load orders';
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
