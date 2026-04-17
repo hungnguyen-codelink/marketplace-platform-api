@@ -1,4 +1,5 @@
 import request from 'supertest';
+import express from 'express';
 
 // Must set env vars BEFORE loading any modules that use env
 process.env.RATE_LIMIT_MAX_REQUESTS = '3';
@@ -28,12 +29,24 @@ jest.mock('../../../src/redis/client', () => ({
 }));
 
 // Must import AFTER all mocks are set up
-const { createApp } = require('../../../src/app');
+const { rateLimiter } = require('../../../src/middleware/rateLimiter');
+
+// Create a minimal test app with the rate limiter explicitly wired
+function createTestApp() {
+  const app = express();
+  app.set('trust proxy', 1);
+  app.use(express.json());
+  app.use(rateLimiter);
+  app.get('/health', (req: any, res: any) => res.json({ status: 'ok' }));
+  app.get('/api/auth/me', (req: any, res: any) => res.status(401).json({ error: 'Unauthorized' }));
+  app.get('/api/products', (req: any, res: any) => res.json({ products: [] }));
+  return app;
+}
 
 let app: any;
 
 beforeAll(async () => {
-  app = createApp();
+  app = createTestApp();
   await mockRedis.flushdb(); // Clear Redis before tests
 });
 

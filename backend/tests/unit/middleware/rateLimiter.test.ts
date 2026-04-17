@@ -191,15 +191,22 @@ describe('rateLimiter Middleware - Unit Tests', () => {
     });
 
     it('should not crash on pexpire error during first increment', async () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
       mockRedis.incr.mockResolvedValue(1);
       mockRedis.pexpire.mockRejectedValue(new Error('PEXPIRE failed'));
 
-      // Note: In current implementation, pexpire error is not caught separately
-      // This test verifies the behavior if pexpire fails
       await rateLimiter(req as Request, res as Response, next);
 
-      // If pexpire fails, the whole request fails due to await
-      // This is a design choice - we could wrap it separately
+      // When pexpire fails independently, the request should still pass through
+      // because INCR succeeded and the limit was enforced correctly
+      expect(next).toHaveBeenCalled();
+      expect(res.set).not.toHaveBeenCalledWith('X-RateLimit-Status', 'DEGRADED');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('[rate-limiter] Failed to set key expiration:'),
+        expect.stringContaining('PEXPIRE failed')
+      );
+
+      consoleSpy.mockRestore();
     });
   });
 

@@ -23,7 +23,12 @@ export async function rateLimiter(req: Request, res: Response, next: NextFunctio
 
     // Set expiration only on first increment (count === 1)
     if (count === 1) {
-      await redis.pexpire(key, windowMs);
+      try {
+        await redis.pexpire(key, windowMs);
+      } catch (err) {
+        console.warn('[rate-limiter] Failed to set key expiration:', err instanceof Error ? err.message : String(err));
+        // Continue — limit is still enforced, just expiry may not work
+      }
     }
 
     // Check if limit exceeded

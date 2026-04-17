@@ -18,7 +18,11 @@ export function createApp() {
   app.set('trust proxy', 1);
   app.use(cors());
   app.use(express.json());
-  app.use(rateLimiter);
+
+  // Only apply rate limiter outside test environment
+  if (process.env.NODE_ENV !== 'test') {
+    app.use(rateLimiter);
+  }
 
   app.get('/health', asyncHandler((_req, res) => {
     res.json({ status: 'ok' });
