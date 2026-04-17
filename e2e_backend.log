@@ -1,36 +1,97 @@
 
 > backend@0.1.0 test
-> jest tests/integration/modules/shops/endpoints.integration.test.ts
+> jest tests/integration/modules/fakestore/endpoints.integration.test.ts
 
-PASS tests/integration/modules/shops/endpoints.integration.test.ts
-  Shops Endpoints - Integration Tests
-    POST /api/shops
-      ✓ should create shop with valid payload, returns 201 with shop object (28 ms)
-      ✓ should reject unauthenticated requests with 401 (12 ms)
-      ✓ should reject non-seller roles with 403 (13 ms)
-      ✓ should return 400 with field-level errors when missing name (15 ms)
-      ✓ should return 400 when optional fields are empty/whitespace-only (14 ms)
-      ✓ should return 409 Conflict when same seller creates shop twice (SHOP-02) (21 ms)
-    GET /api/shops/my
-      ✓ should return 404 when seller has no shop yet (onboarding gate AC-09) (13 ms)
-      ✓ should return 401 for unauthenticated requests (9 ms)
-      ✓ should return 403 for non-seller roles (12 ms)
-      ✓ should return shop after it is created (13 ms)
-    PUT /api/shops/my
-      ✓ should update current seller shop, returns 200 with updated shop object (14 ms)
-      ✓ should return 400 with validation errors for invalid body (12 ms)
-      ✓ should update only provided fields, leaves others unchanged (13 ms)
-      ✓ should return 401 for unauthenticated requests (9 ms)
-      ✓ should return 403 for non-seller roles (11 ms)
-    GET /api/shops/:id
-      ✓ should return shop by ID without auth (12 ms)
-      ✓ should NOT return seller_id in response body for public endpoint (13 ms)
-      ✓ should return 404 if shop not found (10 ms)
-    Onboarding Gate Scenario (AC-09)
-      ✓ should follow complete onboarding flow: no shop → 404 → create shop → success (14 ms)
+  console.error
+    [unhandled] Error: FakeStore API error
+        at Object.<anonymous> (/Users/nguyenviethung/.config/superpowers/worktrees/marketplace-platform-superpowers/marketplace-implementation/backend/tests/integration/modules/fakestore/endpoints.integration.test.ts:252:9)
+        at processTicksAndRejections (node:internal/process/task_queues:103:5)
+
+      20 |   }
+      21 |
+    > 22 |   console.error('[unhandled]', err);
+         |           ^
+      23 |   res.status(500).json({ message: 'Internal server error' });
+      24 | };
+      25 |
+
+      at errorHandler (src/middleware/errorHandler.ts:22:11)
+      at Layer.handle_error (../node_modules/express/lib/router/layer.js:71:5)
+      at trim_prefix (../node_modules/express/lib/router/index.js:326:13)
+      at ../node_modules/express/lib/router/index.js:286:9
+      at router.process_params (../node_modules/express/lib/router/index.js:346:12)
+      at next (../node_modules/express/lib/router/index.js:280:10)
+      at ../node_modules/express/lib/router/index.js:646:15
+      at next (../node_modules/express/lib/router/index.js:265:14)
+      at next (../node_modules/express/lib/router/route.js:141:14)
+
+  console.error
+    [unhandled] Error: FakeStore down
+        at Object.<anonymous> (/Users/nguyenviethung/.config/superpowers/worktrees/marketplace-platform-superpowers/marketplace-implementation/backend/tests/integration/modules/fakestore/endpoints.integration.test.ts:332:9)
+        at Promise.then.completed (/Users/nguyenviethung/.config/superpowers/worktrees/marketplace-platform-superpowers/marketplace-implementation/node_modules/jest-circus/build/utils.js:298:28)
+        at new Promise (<anonymous>)
+        at callAsyncCircusFn (/Users/nguyenviethung/.config/superpowers/worktrees/marketplace-platform-superpowers/marketplace-implementation/node_modules/jest-circus/build/utils.js:231:10)
+        at _callCircusTest (/Users/nguyenviethung/.config/superpowers/worktrees/marketplace-platform-superpowers/marketplace-implementation/node_modules/jest-circus/build/run.js:316:40)
+        at processTicksAndRejections (node:internal/process/task_queues:103:5)
+        at async _runTest (/Users/nguyenviethung/.config/superpowers/worktrees/marketplace-platform-superpowers/marketplace-implementation/node_modules/jest-circus/build/run.js:252:3)
+        at async _runTestsForDescribeBlock (/Users/nguyenviethung/.config/superpowers/worktrees/marketplace-platform-superpowers/marketplace-implementation/node_modules/jest-circus/build/run.js:126:9)
+        at async _runTestsForDescribeBlock (/Users/nguyenviethung/.config/superpowers/worktrees/marketplace-platform-superpowers/marketplace-implementation/node_modules/jest-circus/build/run.js:121:9)
+        at async _runTestsForDescribeBlock (/Users/nguyenviethung/.config/superpowers/worktrees/marketplace-platform-superpowers/marketplace-implementation/node_modules/jest-circus/build/run.js:121:9)
+        at async run (/Users/nguyenviethung/.config/superpowers/worktrees/marketplace-platform-superpowers/marketplace-implementation/node_modules/jest-circus/build/run.js:71:3)
+        at async runAndTransformResultsToJestFormat (/Users/nguyenviethung/.config/superpowers/worktrees/marketplace-platform-superpowers/marketplace-implementation/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+        at async jestAdapter (/Users/nguyenviethung/.config/superpowers/worktrees/marketplace-platform-superpowers/marketplace-implementation/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+        at async runTestInternal (/Users/nguyenviethung/.config/superpowers/worktrees/marketplace-platform-superpowers/marketplace-implementation/node_modules/jest-runner/build/runTest.js:367:16)
+        at async runTest (/Users/nguyenviethung/.config/superpowers/worktrees/marketplace-platform-superpowers/marketplace-implementation/node_modules/jest-runner/build/runTest.js:444:34)
+
+      20 |   }
+      21 |
+    > 22 |   console.error('[unhandled]', err);
+         |           ^
+      23 |   res.status(500).json({ message: 'Internal server error' });
+      24 | };
+      25 |
+
+      at errorHandler (src/middleware/errorHandler.ts:22:11)
+      at Layer.handle_error (../node_modules/express/lib/router/layer.js:71:5)
+      at trim_prefix (../node_modules/express/lib/router/index.js:326:13)
+      at ../node_modules/express/lib/router/index.js:286:9
+      at router.process_params (../node_modules/express/lib/router/index.js:346:12)
+      at next (../node_modules/express/lib/router/index.js:280:10)
+      at ../node_modules/express/lib/router/index.js:646:15
+      at next (../node_modules/express/lib/router/index.js:265:14)
+      at next (../node_modules/express/lib/router/route.js:141:14)
+
+PASS tests/integration/modules/fakestore/endpoints.integration.test.ts
+  FakeStore Endpoints
+    GET /api/fakestore/products
+      ✓ should return 401 without auth token (31 ms)
+      ✓ should return 403 for buyer role (20 ms)
+      ✓ should return 403 for admin role (15 ms)
+      ✓ should return FakeStore products for seller with valid auth (15 ms)
+      ✓ should allow seller without shop to browse products (16 ms)
+      ✓ should return 5xx on FakeStore timeout/error (28 ms)
+    GET /api/fakestore/categories
+      ✓ should be public endpoint (no auth required) (12 ms)
+      ✓ should return string array of categories from FakeStore on first call (13 ms)
+      ✓ should return cached data on subsequent calls (13 ms)
+      ✓ should fall back to DB on Redis unavailability (15 ms)
+      ✓ should fetch from FakeStore when DB is empty and Redis unavailable (15 ms)
+      ✓ should return 5xx on FakeStore error (14 ms)
+    POST /api/fakestore/import
+      ✓ should return 401 without auth token (19 ms)
+      ✓ should return 403 if seller has no shop (15 ms)
+      ✓ should import new products with correct fields (15 ms)
+      ✓ should preserve existing price when overwrite=false (14 ms)
+      ✓ should replace all fields when overwrite=true (13 ms)
+      ✓ should apply field defaults for malformed data (13 ms)
+      ✓ should return 400 for invalid request body (12 ms)
+      ✓ should return 200 with importedIds and count (12 ms)
+      ✓ should not invalidate Redis categories cache on import (15 ms)
+    No regression
+      ✓ should not break existing products endpoints (13 ms)
 
 Test Suites: 1 passed, 1 total
-Tests:       19 passed, 19 total
+Tests:       22 passed, 22 total
 Snapshots:   0 total
-Time:        0.807 s, estimated 1 s
-Ran all test suites matching /tests\/integration\/modules\/shops\/endpoints.integration.test.ts/i.
+Time:        0.958 s, estimated 1 s
+Ran all test suites matching /tests\/integration\/modules\/fakestore\/endpoints.integration.test.ts/i.

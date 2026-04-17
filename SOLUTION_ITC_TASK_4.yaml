@@ -1,0 +1,55 @@
+solution: "FakeStore Integration (Marketplace Catalog)"
+tasks_covered: [4.1, 4.2]
+
+implementation_summary:
+  backend_endpoints:
+    - "GET /api/fakestore/products — fetch all FakeStore products (seller-only auth) → returns mapped product array"
+    - "GET /api/fakestore/categories — fetch category names (public, Redis→DB→API fallback chain) → returns string array"
+    - "POST /api/fakestore/import — import selected FakeStore products into seller's shop (seller-only auth, shop required) → returns { importedIds: number[], count: number }"
+
+  frontend_routes:
+    - "/seller/products/import (FakeStoreImport.tsx) — product browsing and selection grid with checkbox UI, overwrite dialog, import orchestration, error handling + retry"
+
+  protected_routes:
+    - "GET /api/fakestore/products — requires seller role"
+    - "POST /api/fakestore/import — requires seller role + seller must have a shop"
+    - "GET /api/fakestore/categories — public (no auth required)"
+
+test_contract:
+  tiers_required: [e2e, full_suite]
+  rationale: "E2E validates end-to-end user flow and backend import logic. Full suite catches regressions in product mapping, cache fallback, overwrite behavior, and existing endpoints."
+
+  e2e:
+    commands:
+      - "cd /Users/nguyenviethung/.config/superpowers/worktrees/marketplace-platform-superpowers/marketplace-implementation && npm test"
+
+    scenarios:
+      - "Seller browses FakeStore products → selects multiple → opens import dialog with overwrite unchecked → confirms import → navigates to /seller/products with success toast"
+      - "Seller browses FakeStore products → selects single product → opens import dialog → checks overwrite → confirms → verifies existing product price/description are replaced"
+      - "Seller attempts import without shop → receives 403 Forbidden error with message 'Seller must have a shop to import products'"
+      - "Seller clicks retry on failed product load → successfully loads products on second attempt"
+      - "Buyer role attempts GET /api/fakestore/products → receives 403 Forbidden"
+      - "Unauthenticated user attempts GET /api/fakestore/products → receives 401 Unauthorized"
+      - "GET /api/fakestore/categories returns cached data on Redis hit without calling FakeStore API"
+      - "GET /api/fakestore/categories falls back to DB when Redis unavailable"
+      - "GET /api/fakestore/categories falls back to FakeStore API when DB empty and Redis unavailable"
+
+    required_services:
+      - "Backend server (localhost:3000)"
+      - "Frontend dev server (localhost:3001) or built dist/"
+      - "PostgreSQL database"
+      - "Redis (optional, fallback to DB)"
+      - "FakeStore API (mocked in tests)"
+
+  full_suite:
+    command: "cd /Users/nguyenviethung/.config/superpowers/worktrees/marketplace-platform-superpowers/marketplace-implementation && npm run test -w backend && npm run test -w frontend"
+    rationale: "Backend integration tests (endpoints.integration.test.ts) verify all auth/validation/upsert/field-mapping logic. Frontend unit tests (FakeStoreImport.test.tsx) verify UI state, modal behavior, error handling, and API call signatures. Together they catch regressions in product import flow, cache chain, overwrite modes, and edge cases (null images, zero ratings, malformed data)."
+
+acceptance_criteria:
+  e2e: all scenarios pass
+  full_suite: "Backend: 22 tests pass. Frontend: 36 tests pass. No existing product endpoints broken."
+  no_regression: true
+
+sign_off:
+  coding_agent: "✅"
+  testing_agent: "(pending)"

@@ -14,3 +14,19 @@ Both esbuild and oxc options were set. oxc options will be used and esbuild opti
    Start at  09:35:29
    Duration  613ms (transform 22ms, setup 74ms, import 15ms, tests 3ms, environment 441ms)
 
+
+> frontend@0.1.0 test
+> vitest run src/pages/seller/FakeStoreImport.test.tsx src/api/fakestore.test.ts
+
+11:33:02 AM [vite] warning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.
+11:33:02 AM [vite] warning: `optimizeDeps.esbuildOptions` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `optimizeDeps.rolldownOptions` instead.
+Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored. The following esbuild options were set: `{ jsx: 'automatic', jsxImportSource: undefined }`
+
+ RUN  v4.1.4 /Users/nguyenviethung/.config/superpowers/worktrees/marketplace-platform-superpowers/marketplace-implementation/frontend
+
+
+ Test Files  2 passed (2)
+      Tests  34 passed (34)
+   Start at  11:33:02
+   Duration  1.50s (transform 104ms, setup 174ms, import 142ms, tests 804ms, environment 851ms)
+

@@ -5,6 +5,9 @@ import { authRouter } from './modules/auth/router';
 import { shopsRouter } from './modules/shops/router';
 import { productsRouter } from './modules/products/router';
 import { fakestoreRouter } from './modules/fakestore/router';
+import { cartRouter } from './modules/cart/router';
+import { ordersRouter, sellerOrdersRouter } from './modules/orders/router';
+import { mockPaymentRouter } from './modules/payment/router';
 import { asyncHandler } from './utils/asyncHandler';
 
 export function createApp() {
@@ -21,6 +24,10 @@ export function createApp() {
   app.use('/api/shops', shopsRouter);
   app.use('/api/products', productsRouter);
   app.use('/api/fakestore', fakestoreRouter);
+  app.use('/api/cart', cartRouter);
+  app.use('/api/orders', ordersRouter);
+  app.use('/api/seller/orders', sellerOrdersRouter);
+  app.use('/api/mock-payment', mockPaymentRouter);
 
   app.use(errorHandler);
 
