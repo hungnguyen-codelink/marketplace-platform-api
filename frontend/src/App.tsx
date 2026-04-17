@@ -12,6 +12,7 @@ import Register from './pages/auth/Register';
 // Buyer pages
 import ProductBrowse from './pages/buyer/ProductBrowse';
 import ProductDetail from './pages/buyer/ProductDetail';
+import ShopDetail from './pages/buyer/ShopDetail';
 import Cart from './pages/buyer/Cart';
 import Checkout from './pages/buyer/Checkout';
 import CheckoutSuccess from './pages/buyer/CheckoutSuccess';
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/products/:id" element={<ProductDetail />} />
+        <Route path="/shops/:id" element={<ShopDetail />} />
 
         {/* Buyer routes (authenticated) */}
         <Route path="/cart" element={<RequireAuth><Cart /></RequireAuth>} />
