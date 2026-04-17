@@ -24,9 +24,15 @@ WORKDIR /app
 # Create non-root user
 RUN addgroup -S appuser && adduser -S appuser -G appuser
 
-# Copy dist and node_modules from builder
+# Copy package files and install only production dependencies
+COPY package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+
+# Copy compiled output from builder
 COPY --from=builder /app/dist ./dist/
-COPY --from=builder /app/node_modules ./node_modules/
+
+# Set production environment
+ENV NODE_ENV=production
 
 # Change to non-root user
 USER appuser
