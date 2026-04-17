@@ -7,6 +7,7 @@ exports.createApp = createApp;
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const errorHandler_1 = require("./middleware/errorHandler");
+const rateLimiter_1 = require("./middleware/rateLimiter");
 const router_1 = require("./modules/auth/router");
 const router_2 = require("./modules/shops/router");
 const router_3 = require("./modules/products/router");
@@ -18,8 +19,13 @@ const router_8 = require("./modules/reviews/router");
 const asyncHandler_1 = require("./utils/asyncHandler");
 function createApp() {
     const app = (0, express_1.default)();
+    app.set('trust proxy', 1);
     app.use((0, cors_1.default)());
     app.use(express_1.default.json());
+    // Only apply rate limiter outside test environment
+    if (process.env.NODE_ENV !== 'test') {
+        app.use(rateLimiter_1.rateLimiter);
+    }
     app.get('/health', (0, asyncHandler_1.asyncHandler)((_req, res) => {
         res.json({ status: 'ok' });
     }));

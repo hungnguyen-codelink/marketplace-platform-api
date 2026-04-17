@@ -26,7 +26,8 @@ test.describe('Review Cycle Flow', () => {
     const addCartBtn = page.getByRole('button', { name: /add to cart|add.+cart/i });
     if (await addCartBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
       await addCartBtn.click();
-      await page.waitForTimeout(500);
+      // Wait for the toast or success message to appear
+      await expect(page.locator('[role="status"], [class*="toast"], [class*="success"]')).toBeVisible({ timeout: 5000 });
     }
 
     // Checkout
@@ -149,7 +150,8 @@ test.describe('Review Cycle Flow', () => {
       await stars.last().click();
     }
 
-    await page.waitForTimeout(300);
+    // Wait for the rating to be registered before submitting
+    await page.waitForLoadState('networkidle');
 
     // Add comment if textarea exists
     const commentInput = reviewForm.locator('textarea').first();

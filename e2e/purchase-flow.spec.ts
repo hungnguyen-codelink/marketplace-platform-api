@@ -105,7 +105,8 @@ test.describe('Purchase Flow', () => {
     const addCartBtn = page.getByRole('button', { name: /add to cart|add.+cart/i });
     if (await addCartBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
       await addCartBtn.click();
-      await page.waitForTimeout(500);
+      // Wait for the toast or success message to appear
+      await expect(page.locator('[role="status"], [class*="toast"], [class*="success"]')).toBeVisible({ timeout: 5000 });
     }
 
     // Go to checkout

@@ -66,7 +66,8 @@ test.describe('Seller Onboarding Flow', () => {
 
     if (await continueBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
       await continueBtn.click();
-      await page.waitForTimeout(500);
+      // Wait for the next step to load
+      await expect(page.locator('input[placeholder*="shop" i], input[placeholder*="name" i]')).toBeVisible({ timeout: 10000 });
     }
 
     // Step 2: Fill shop information

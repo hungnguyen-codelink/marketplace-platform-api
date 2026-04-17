@@ -29,7 +29,8 @@ test.describe('Degraded Mode - FakeStore Unreachable', () => {
     const continueBtn = page.getByRole('button', { name: /continue|next/i });
     if (await continueBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
       await continueBtn.click();
-      await page.waitForTimeout(500);
+      // Wait for the next step to load
+      await expect(page.locator('input[placeholder*="shop" i], input[placeholder*="name" i]')).toBeVisible({ timeout: 10000 });
     }
 
     // Fill shop info
@@ -90,7 +91,8 @@ test.describe('Degraded Mode - FakeStore Unreachable', () => {
     // Add to cart
     const addCartBtn = page.getByRole('button', { name: /add to cart|add.+cart/i });
     await addCartBtn.click();
-    await page.waitForTimeout(500);
+    // Wait for the toast or success message to appear
+    await expect(page.locator('[role="status"], [class*="toast"], [class*="success"]')).toBeVisible({ timeout: 5000 });
 
     // Proceed to cart and checkout
     await page.goto('/checkout');
@@ -169,7 +171,8 @@ test.describe('Degraded Mode - FakeStore Unreachable', () => {
     const continueBtn = page.getByRole('button', { name: /continue|next/i });
     if (await continueBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
       await continueBtn.click();
-      await page.waitForTimeout(500);
+      // Wait for the next step to load
+      await expect(page.locator('input[placeholder*="shop" i], input[placeholder*="name" i]')).toBeVisible({ timeout: 10000 });
     }
 
     const shopNameInput = page.locator('input[placeholder*="shop" i], input[placeholder*="name" i]').first();
@@ -182,7 +185,8 @@ test.describe('Degraded Mode - FakeStore Unreachable', () => {
 
     // Go to import page
     await page.goto('/seller/products/import');
-    await page.waitForTimeout(1000);
+    // Wait for the import page to load - either show products or error
+    await expect(page.locator('input[type="checkbox"], [role="alert"]')).toBeVisible({ timeout: 10000 }).catch(() => true);
 
     // Go back to home (should work regardless of import state)
     await page.goto('/');
@@ -240,7 +244,8 @@ test.describe('Degraded Mode - FakeStore Unreachable', () => {
     const continueBtn = page.getByRole('button', { name: /continue|next/i });
     if (await continueBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
       await continueBtn.click();
-      await page.waitForTimeout(500);
+      // Wait for the next step to load
+      await expect(page.locator('input[placeholder*="shop" i], input[placeholder*="name" i]')).toBeVisible({ timeout: 10000 });
     }
 
     const shopNameInput = page.locator('input[placeholder*="shop" i], input[placeholder*="name" i]').first();
