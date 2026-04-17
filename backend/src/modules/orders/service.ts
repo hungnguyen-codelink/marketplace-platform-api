@@ -398,18 +398,24 @@ export class OrdersService {
   }
 
   async updateSellerOrderStatus(sellerId: string, orderId: string, newStatus: string): Promise<OrderResponse> {
-    // Get seller's shop
-    const shopResult = await db.query('SELECT id FROM shops WHERE seller_id = $1', [sellerId]);
+    // First: Check if order exists at all
+    const orderExistsResult = await db.query(
+      `SELECT id, status FROM orders WHERE id = $1`,
+      [orderId]
+    );
 
-    if (shopResult.rows.length === 0) {
+    if (orderExistsResult.rows.length === 0) {
       throw new NotFoundError('Order not found');
     }
 
-    const shopId = shopResult.rows[0].id;
+    // Get seller's shop
+    const shopResult = await db.query('SELECT id FROM shops WHERE seller_id = $1', [sellerId]);
 
-    // Verify order exists and seller has products in it
-    const orderCheckResult = await db.query(
-      `SELECT DISTINCT o.id, o.status
+    const shopId = shopResult.rows.length > 0 ? shopResult.rows[0].id : null;
+
+    // Second: Check if seller has products in this order
+    const sellerHasProductsResult = await db.query(
+      `SELECT DISTINCT o.id
        FROM orders o
        INNER JOIN order_items oi ON o.id = oi.order_id
        INNER JOIN products p ON oi.product_id = p.id
@@ -417,11 +423,11 @@ export class OrdersService {
       [orderId, shopId]
     );
 
-    if (orderCheckResult.rows.length === 0) {
-      throw new NotFoundError('Order not found');
+    if (sellerHasProductsResult.rows.length === 0) {
+      throw new ForbiddenError('Access denied');
     }
 
-    const currentOrder = orderCheckResult.rows[0];
+    const currentOrder = orderExistsResult.rows[0];
     const currentStatus = currentOrder.status;
 
     // Validate state transition

@@ -789,7 +789,7 @@ describe('Orders Endpoints - Integration Tests', () => {
       expect(res.body).toHaveProperty('validNextStates');
     });
 
-    it('should return 404 if seller has no products in order', async () => {
+    it('should return 403 if seller has no products in order', async () => {
       const sellerId1 = await createUser('seller1@example.com', 'seller');
       const sellerId2 = await createUser('seller2@example.com', 'seller');
       const buyerId = await createUser('buyer@example.com', 'buyer');
@@ -823,7 +823,7 @@ describe('Orders Endpoints - Integration Tests', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({ status: 'confirmed' });
 
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(403);
     });
 
     it('should return 404 if order does not exist', async () => {
