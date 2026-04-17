@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getSellerOrders } from '../../api/orders';
 import StatusBadge from '../../components/StatusBadge';
@@ -93,7 +93,7 @@ export default function SellerOrders() {
       </div>
 
       {orders.data.length === 0 ? (
-        <EmptyState message="No orders found" />
+        <EmptyState title="No orders found" />
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="w-full">
