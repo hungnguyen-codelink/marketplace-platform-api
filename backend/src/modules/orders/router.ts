@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { z } from 'zod';
+import { z, ZodError } from 'zod';
 import { ordersController } from './controller';
 import { validate } from '../../middleware/validate';
 import { authenticate } from '../../middleware/authenticate';
@@ -24,6 +24,39 @@ const updateOrderStatusSchema = z.object({
     errorMap: () => ({ message: 'status must be one of: confirmed, shipped, delivered, completed' }),
   }),
 });
+
+const getSellerOrdersQuerySchema = z.object({
+  status: z.enum(['pending', 'confirmed', 'shipped', 'delivered', 'completed'], {
+    errorMap: () => ({ message: 'status must be one of: pending, confirmed, shipped, delivered, completed' }),
+  }).optional(),
+  page: z.string().regex(/^\d+$/, 'page must be a valid integer').optional(),
+  limit: z.string().regex(/^\d+$/, 'limit must be a valid integer').optional(),
+}).strict();
+
+// Middleware to validate query parameters for seller orders
+const validateSellerOrdersQuery = (req: any, res: any, next: any) => {
+  try {
+    const validated = getSellerOrdersQuerySchema.parse(req.query);
+    req.query = validated;
+    next();
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const fieldErrors: Record<string, string[]> = {};
+      error.errors.forEach((err) => {
+        const field = err.path[0] as string;
+        if (!fieldErrors[field]) {
+          fieldErrors[field] = [];
+        }
+        fieldErrors[field].push(err.message);
+      });
+      return res.status(400).json({
+        message: 'Validation failed',
+        errors: fieldErrors,
+      });
+    }
+    next(error);
+  }
+};
 
 export const ordersRouter = Router();
 
@@ -56,6 +89,7 @@ sellerOrdersRouter.get(
   '/',
   authenticate,
   requireRole('seller'),
+  validateSellerOrdersQuery,
   asyncHandler((req, res) => ordersController.getSellerOrders(req, res))
 );
 

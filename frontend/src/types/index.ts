@@ -93,7 +93,9 @@ export interface FakestoreProduct {
 export interface CartItem {
   product_id: string;
   quantity: number;
-  product?: Product;
+  title: string;
+  price: number;
+  image_url?: string | null;
 }
 
 export interface Cart {

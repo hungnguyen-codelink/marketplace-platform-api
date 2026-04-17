@@ -46,8 +46,8 @@ export default function Cart() {
           <tbody className="divide-y divide-gray-200">
             {cart.items.map((item) => (
               <tr key={item.product_id}>
-                <td className="px-6 py-4 text-sm text-gray-900">{item.product?.title || 'Unknown Product'}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">${item.product?.price.toFixed(2) || '0.00'}</td>
+                <td className="px-6 py-4 text-sm text-gray-900">{item.title || 'Unknown Product'}</td>
+                <td className="px-6 py-4 text-sm text-gray-600">${item.price.toFixed(2)}</td>
                 <td className="px-6 py-4 text-sm">
                   <div className="flex items-center gap-2">
                     <button
@@ -68,7 +68,7 @@ export default function Cart() {
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                  ${((item.product?.price || 0) * item.quantity).toFixed(2)}
+                  ${(item.price * item.quantity).toFixed(2)}
                 </td>
                 <td className="px-6 py-4 text-sm">
                   <button
