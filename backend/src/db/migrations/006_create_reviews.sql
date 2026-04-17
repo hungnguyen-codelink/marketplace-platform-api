@@ -7,3 +7,5 @@ CREATE TABLE IF NOT EXISTS reviews (
   text          TEXT,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+CREATE INDEX IF NOT EXISTS idx_reviews_product_id ON reviews(product_id);
